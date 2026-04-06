@@ -150,6 +150,26 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 
 ---
 
+## [2026-04-06] Axios npm supply chain attack - RAT en versiones 1.14.1 y 0.30.4
+
+- **Source**: [SOCRadar CISO Guide](https://socradar.io/blog/axios-npm-supply-chain-attack-2026-ciso-guide/) / [MayhemCode](https://www.mayhemcode.com/2026/04/axios-npm-supply-chain-attack-2026.html)
+- **Confidence**: Alta
+- **What changes**: El 31 de marzo 2026, el actor UNC1069 (nexo Corea del Norte) hijackeó la cuenta npm del mantenedor principal de Axios (~100M descargas semanales) y publicó dos versiones maliciosas: `axios 1.14.1` (tag latest) y `axios 0.30.4` (tag legacy). Un script `postinstall` desplegó automáticamente los payloads **SILKBELL** (dropper) y **WAVESHAPER.V2** (backdoor RAT), cross-platform Windows/macOS/Linux.
+- **Action required**: Urgente
+- **Details**: Verificar inmediatamente la versión de Axios en todos los proyectos. Si se instaló `1.14.1` o `0.30.4` en el período de 2-3 horas del ataque (31 mar 2026), tratar el entorno como comprometido. Actualizar a la versión limpia más reciente. El vector inicial fue ingeniería social vía Slack/Teams falsos + instalador malicioso.
+
+---
+
+## [2026-04-06] Node.js 26 - fecha de release confirmada: 22 abril 2026
+
+- **Source**: [GitHub nodejs/node issue #61832](https://github.com/nodejs/node/issues/61832)
+- **Confidence**: Alta
+- **What changes**: Node.js 26 se lanzará el **22 de abril de 2026** (16 días). Es el último release bajo el modelo even/odd. LTS comienza octubre 2026, EOL abril 2029. El cutoff de commits fue el 22 de marzo de 2026.
+- **Action required**: Monitorear
+- **Details**: Complementa la entrada anterior sobre el nuevo calendario anual. Actualizar CI/CD y dockerfiles que fijen versiones de Node.js cuando salga. Node.js 27 (abril 2027) será el primero bajo el nuevo modelo de un release anual.
+
+---
+
 ## [2026-04-06] Python 3.14 - free-threading (sin GIL) oficialmente soportado
 
 - **Source**: [Python 3.14 What's New](https://docs.python.org/3/whatsnew/3.14.html) / [python.org/downloads](https://www.python.org/downloads/)

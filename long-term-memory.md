@@ -67,3 +67,93 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **Que cambia**: React 19.2 (oct 2025) introduce: (1) `<Activity>` component para gestionar visibilidad y preservar estado, (2) `useEffectEvent` hook para handlers estables en effects. No hay React 20 aun - la ultima version estable es 19.2.
 - **Accion requerida**: Monitorear
 - **Detalles**: `<Activity>` reemplaza patrones manuales de mostrar/ocultar componentes preservando estado (similar al antiguo concepto de offscreen). `useEffectEvent` resuelve el problema clasico de refs stale en effects sin necesidad de incluir callbacks en dependency arrays. Ambos son adiciones, no breaking changes.
+
+---
+
+## [2026-04-06] TypeScript 6.0 GA - breaking changes masivos, strict on por defecto
+
+- **Source**: [TypeScript Blog oficial](https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/) / [GitHub Releases](https://github.com/microsoft/typescript/releases)
+- **Confidence**: Alta
+- **What changes**: TypeScript 6.0 (23 mar 2026) es el ultimo release con el compilador JS. Breaking changes: (1) `strict: true` por defecto en proyectos nuevos. (2) Target ES5 deprecado — minimo ahora ES2015. (3) Default `module: esnext`, `target: ES2025`. (4) `moduleResolution: classic` **eliminado**. (5) AMD, UMD y SystemJS **eliminados**. (6) `esModuleInterop`/`allowSyntheticDefaultImports` no pueden setearse a `false`. (7) `--moduleResolution node` (node10) deprecado. (8) `--baseUrl` deprecado. (9) `types` default es `[]`.
+- **Action required**: Actualizar dependencia
+- **Details**: Supercede la entrada de TS 5.9. Cualquier proyecto con `moduleResolution: classic`, targets ES5, o modulos AMD/UMD/SystemJS se rompe. Migrar a `moduleResolution: bundler` o `nodenext`. TS 7.0 (compilador Go, ~10x mas rapido) esta en preview en Visual Studio 2026 Insiders.
+
+---
+
+## [2026-04-06] React Native - arquitectura legacy completamente deprecada
+
+- **Source**: [React Native Blog](https://reactnative.dev/blog) / [Software Mansion 2026 Predictions](https://blog.swmansion.com/react-native-in-2026-trends-our-predictions-463a837420c7)
+- **Confidence**: Alta
+- **What changes**: La arquitectura bridge-based (legacy) de React Native ya no puede habilitarse en versiones actuales y esta siendo eliminada del codebase.
+- **Action required**: Migrar
+- **Details**: Migrar a la New Architecture: Fabric renderer + JSI. Proyectos que aun dependan de modulos nativos con el bridge antiguo deben actualizar o usar wrappers de compatibilidad.
+
+---
+
+## [2026-04-06] Node.js 20 EOL - 30 abril 2026 (URGENTE)
+
+- **Source**: [nodejs.org/en/about/eol](https://nodejs.org/en/about/eol) / [CloudQuery Blog](https://www.cloudquery.io/blog/aws-lambda-nodejs-20-eol) / [WordPress VIP](https://lobby.vip.wordpress.com/2026/01/29/end-of-life-for-node-js-v20/)
+- **Confidence**: Alta
+- **What changes**: Node.js 20 pierde todo soporte (security patches, bug fixes) el 30 abril 2026 — en 24 dias. Breaking changes al migrar a Node.js 22: (1) Import assertions (`assert`) reemplazado por import attributes (`with`). (2) Native addons requieren `npm rebuild`. (3) Streams high-water mark aumentado de 16KB a 64KB. AWS Lambda: bloquea nuevas funciones en Node.js 20 desde agosto 2026.
+- **Action required**: Urgente
+- **Details**: Migrar a Node.js 22 antes del 30 abril 2026. En AWS Lambda la deprecacion tiene 3 fases: bloqueo de creacion (31 ago), bloqueo de actualizaciones (30 sep 2026).
+
+---
+
+## [2026-04-06] Node.js - nuevo calendario de releases anual (efectivo oct 2026)
+
+- **Source**: [nodejs.org blog](https://nodejs.org/en/blog/announcements/evolving-the-nodejs-release-schedule)
+- **Confidence**: Alta
+- **What changes**: A partir de octubre 2026: (1) Un major release por ano (en abril). (2) Todos los releases seran LTS — desaparece la distincion odd/even. (3) Nuevo canal Alpha (oct-mar) para breaking changes pre-release. (4) Numeros de version siguen el año calendario. Node.js 26 (abril 2026) es el ultimo bajo el modelo actual.
+- **Action required**: Monitorear
+- **Details**: Node.js 27 en abril 2027 sera el primero bajo el nuevo modelo. Soporte total: 36 meses por release (6 Current + 30 LTS). No cambia la duracion del LTS ni el ciclo de V8.
+
+---
+
+## [2026-04-06] Claude Haiku 3 (`claude-3-haiku-20240307`) retirado el 20 abril 2026 (URGENTE)
+
+- **Source**: [Anthropic Model Deprecations](https://platform.claude.com/docs/en/about-claude/model-deprecations)
+- **Confidence**: Alta
+- **What changes**: Todas las llamadas a `claude-3-haiku-20240307` retornaran **error** despues del 20 abril 2026 — en 14 dias.
+- **Action required**: Urgente
+- **Details**: Reemplazar con `claude-haiku-4-5-20251001`. Buscar en el codigo cualquier string `claude-3-haiku-20240307` y actualizar antes del 20 abril.
+
+---
+
+## [2026-04-06] Anthropic - beta 1M context retirado para Sonnet 4.5/4 el 30 abril 2026
+
+- **Source**: [Anthropic API Release Notes, 30 mar 2026](https://platform.claude.com/docs/en/release-notes/overview)
+- **Confidence**: Alta
+- **What changes**: El header beta `context-1m-2025-08-07` no tendra efecto en `claude-sonnet-4-5` y `claude-sonnet-4` despues del 30 abril 2026. Requests que excedan 200k tokens retornaran **error**.
+- **Action required**: Urgente
+- **Details**: Migrar a `claude-sonnet-4-6` o `claude-opus-4-6` que soportan 1M tokens nativamente sin header beta. Remover el header `context-1m-2025-08-07` de las llamadas.
+
+---
+
+## [2026-04-06] Anthropic API - nuevas features marzo 2026
+
+- **Source**: [Anthropic API Release Notes](https://platform.claude.com/docs/en/release-notes/overview)
+- **Confidence**: Alta
+- **What changes**: (1) Message Batches API: `max_tokens` elevado a 300k para `claude-opus-4-6` y `claude-sonnet-4-6` con header `output-300k-2026-03-24`. (2) Models API (`GET /v1/models`) ahora retorna `max_input_tokens`, `max_tokens` y objeto `capabilities` para discovery programatico. (3) Extended thinking: nuevo campo `thinking.display: "omitted"` — omite contenido pero preserva `signature` para continuidad multi-turn.
+- **Action required**: Monitorear
+- **Details**: El campo `capabilities` en Models API elimina la necesidad de hardcodear limites por modelo. La opcion `display: "omitted"` en thinking acelera streaming sin romper cadenas multi-turn.
+
+---
+
+## [2026-04-06] Next.js 16.2 - startup ~400% mas rapido, Stable Adapter API
+
+- **Source**: [Next.js Blog](https://nextjs.org/blog/next-16-2) / [GitHub Releases](https://github.com/vercel/next.js/releases)
+- **Confidence**: Alta
+- **What changes**: Next.js 16.2 (18 mar 2026): (1) ~400% faster `next dev` startup, ~50% faster rendering. (2) Turbopack: SRI support, `postcss.config.ts`, tree shaking, Server Fast Refresh. (3) Stable Adapter API para deployment cross-platform. (4) `AGENTS.md` en `create-next-app`. (5) Security patches: CVE-2026-27979 (`maxPostponedStateSize`) y CVE-2026-29057 (`http-proxy`).
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar para recibir los parches de seguridad CVE-2026-27979 y CVE-2026-29057. El Stable Adapter API permite colaboracion con otros proveedores de deployment sin vendor lock-in a Vercel.
+
+---
+
+## [2026-04-06] Python 3.14 - free-threading (sin GIL) oficialmente soportado
+
+- **Source**: [Python 3.14 What's New](https://docs.python.org/3/whatsnew/3.14.html) / [python.org/downloads](https://www.python.org/downloads/)
+- **Confidence**: Alta
+- **What changes**: Python 3.14 (ultima estable: 3.14.3, feb 2026) convierte free-threading en **oficialmente soportado** (no experimental). Overhead single-thread reducido de ~40% a ~10-15%. Nuevas features: `string.templatelib` (t-strings), `concurrent.interpreters` para aislamiento via subinterpreters.
+- **Action required**: Monitorear
+- **Details**: El build free-threaded (`python3.14t` en Windows) sigue siendo un ejecutable separado — el GIL sigue siendo default. T-strings producen un objeto `Template` (distinto de f-strings). Python 3.10 llega a EOL el 31 oct 2026.

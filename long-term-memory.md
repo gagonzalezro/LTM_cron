@@ -177,3 +177,33 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Python 3.14 (ultima estable: 3.14.3, feb 2026) convierte free-threading en **oficialmente soportado** (no experimental). Overhead single-thread reducido de ~40% a ~10-15%. Nuevas features: `string.templatelib` (t-strings), `concurrent.interpreters` para aislamiento via subinterpreters.
 - **Action required**: Monitorear
 - **Details**: El build free-threaded (`python3.14t` en Windows) sigue siendo un ejecutable separado — el GIL sigue siendo default. T-strings producen un objeto `Template` (distinto de f-strings). Python 3.10 llega a EOL el 31 oct 2026.
+
+---
+
+## [2026-04-06] CVE-2025-55182 "React2Shell" - RCE crítico CVSS 10.0 en React Server Components, explotación activa
+
+- **Source**: [React Blog oficial](https://react.dev/blog/2025/12/03/critical-security-vulnerability-in-react-server-components) / [The Hacker News (2 abr 2026)](https://thehackernews.com/2026/04/hackers-exploit-cve-2025-55182-to.html)
+- **Confidence**: Alta
+- **What changes**: CVE-2025-55182 (CVSS 10.0) permite RCE no autenticado en aplicaciones React que usan Server Functions. A partir del 2 de abril 2026 se detectó explotación activa masiva: 766 hosts comprometidos. Los atacantes cosechan credenciales de DB, SSH keys, AWS/GCP/Azure IAM creds, API keys (Stripe, OpenAI, SendGrid, GitHub), y Kubernetes tokens.
+- **Action required**: Urgente
+- **Details**: Afecta `react-server-dom-webpack`, `react-server-dom-parcel`, `react-server-dom-turbopack` versiones 19.0, 19.1.0, 19.1.1, 19.2.0. Versiones parcheadas: 19.0.1, 19.1.2, 19.2.1. Para Next.js: actualizar a 14.2.35 (rama 14.x), 15.0.8+, o 16.0.11+. Apps que **no usan** React Server Components ni Server Functions no están afectadas. CVEs relacionados: CVE-2025-55184 (DoS, CVSS 7.5), CVE-2025-55183 (source code exposure, CVSS 5.3).
+
+---
+
+## [2026-04-06] TeamPCP - ataque a cadena de suministro de Trivy (Aqua Security), 19 marzo 2026
+
+- **Source**: [Wiz Blog](https://www.wiz.io/blog/trivy-compromised-teampcp-supply-chain-attack) / [Microsoft Security Blog (24 mar 2026)](https://www.microsoft.com/en-us/security/blog/2026/03/24/detecting-investigating-defending-against-trivy-supply-chain-compromise/)
+- **Confidence**: Alta
+- **What changes**: El 19 de marzo 2026, el actor **TeamPCP** comprometió Trivy (el vulnerability scanner de Aqua Security, ~100M pulls/mes) usando credenciales retenidas de una remediación incompleta de febrero. Publicaron binarios maliciosos: Trivy **v0.69.4** y Docker images v0.69.5/v0.69.6. Force-pushed **75 de 76 tags** de `trivy-action` y todos los tags de `setup-trivy`. El payload cosechó: env vars, cloud creds (AWS/GCP/Azure), SSH keys, Kubernetes tokens, GitHub tokens, Docker Hub creds, wallet crypto. Datos exfiltrados con AES-256-CBC + RSA-4096.
+- **Action required**: Urgente
+- **Details**: Si tu CI/CD ejecutó Trivy v0.69.4 o usó tags de `trivy-action`/`setup-trivy` entre el 19-20 marzo, tratar como comprometido y rotar todos los secrets. IOCs: C2 domain `scan.aquasecurtiy[.]org` (typosquatting). Mitigación: pinear GitHub Actions a SHAs completos en vez de tags de versión. TeamPCP luego usó las credenciales robadas para comprometer 47+ paquetes npm adicionales.
+
+---
+
+## [2026-04-06] GlassWorm - 72+ extensiones maliciosas en Open VSX (marketplace VS Code)
+
+- **Source**: [The Hacker News (mar 2026)](https://thehackernews.com/2026/03/glassworm-supply-chain-attack-abuses-72.html) / [Socket Security](https://socket.dev)
+- **Confidence**: Alta
+- **What changes**: Desde el 31 de enero 2026, el actor GlassWorm publicó +72 extensiones maliciosas en Open VSX (el marketplace alternativo a VS Code Marketplace, usado en VSCodium y entornos corporativos). Las extensiones suplantan linters, formatters, y AI coding assistants. Vector sofisticado: usan `extensionPack` y `extensionDependencies` para convertir extensiones inicialmente benignas en vectores de entrega transitiva (se actualizan para añadir dependencias maliciosas después de establecer confianza). Payload: roba secrets, drena crypto wallets, usa sistemas infectados como proxies. C2 vía Solana blockchain como dead drop resolver. Evita infectar sistemas en locale ruso.
+- **Action required**: Monitorear
+- **Details**: Open VSX ya eliminó las extensiones reportadas. Si usas Open VSX (no el marketplace oficial de Microsoft): auditar extensiones instaladas, especialmente las que imitan herramientas conocidas. Revisar actividad de red inusual hacia addresses de Solana. Las extensiones usaban Unicode invisible para ocultar código malicioso. Ejemplos de extensiones afectadas: `gvotcha.claude-code-extension`, `angular-studio.ng-angular-extension`, `turbobase.sql-turbo-tool`.

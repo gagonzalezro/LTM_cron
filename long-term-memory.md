@@ -207,3 +207,13 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Desde el 31 de enero 2026, el actor GlassWorm publicó +72 extensiones maliciosas en Open VSX (el marketplace alternativo a VS Code Marketplace, usado en VSCodium y entornos corporativos). Las extensiones suplantan linters, formatters, y AI coding assistants. Vector sofisticado: usan `extensionPack` y `extensionDependencies` para convertir extensiones inicialmente benignas en vectores de entrega transitiva (se actualizan para añadir dependencias maliciosas después de establecer confianza). Payload: roba secrets, drena crypto wallets, usa sistemas infectados como proxies. C2 vía Solana blockchain como dead drop resolver. Evita infectar sistemas en locale ruso.
 - **Action required**: Monitorear
 - **Details**: Open VSX ya eliminó las extensiones reportadas. Si usas Open VSX (no el marketplace oficial de Microsoft): auditar extensiones instaladas, especialmente las que imitan herramientas conocidas. Revisar actividad de red inusual hacia addresses de Solana. Las extensiones usaban Unicode invisible para ocultar código malicioso. Ejemplos de extensiones afectadas: `gvotcha.claude-code-extension`, `angular-studio.ng-angular-extension`, `turbobase.sql-turbo-tool`.
+
+---
+
+## [2026-04-07] Anthropic API - features adicionales de abril 2026 no capturadas previamente
+
+- **Source**: [Anthropic API Release Notes](https://docs.anthropic.com/en/release-notes/overview) / [Releasebot Anthropic April 2026](https://releasebot.io/updates/anthropic)
+- **Confidence**: Alta
+- **What changes**: Cuatro cambios adicionales a la API de Anthropic confirmados en los release notes de abril 2026, no incluidos en la entrada anterior de marzo: (1) Web search tool y web fetch ahora **GA sin beta headers** — se elimina la necesidad de pasar cualquier header beta para activarlos. (2) Web search/fetch soportan **dynamic filtering** via code execution integrado — filtra resultados antes de que lleguen al contexto, mejora rendimiento y reduce costo de tokens. (3) **API code execution es gratuito** cuando se usa junto con web search o web fetch (solo se cobra cuando se usa de forma standalone). (4) **Fine-grained tool streaming** ahora GA en todos los modelos y plataformas (no solo Opus/Sonnet).
+- **Action required**: Monitorear
+- **Details**: El punto (1) simplifica integraciones existentes: remover headers beta de web search. El punto (3) hace económicamente viable usar code execution para pipelines que ya usen web search/fetch. El dynamic filtering (2) es especialmente útil para reducir context bloat en búsquedas con muchos resultados. Los cambios complementan y actualizan la entrada anterior del 2026-04-06 sobre features de marzo.

@@ -277,3 +277,73 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Cuatro cambios adicionales a la API de Anthropic confirmados en los release notes de abril 2026, no incluidos en la entrada anterior de marzo: (1) Web search tool y web fetch ahora **GA sin beta headers** — se elimina la necesidad de pasar cualquier header beta para activarlos. (2) Web search/fetch soportan **dynamic filtering** via code execution integrado — filtra resultados antes de que lleguen al contexto, mejora rendimiento y reduce costo de tokens. (3) **API code execution es gratuito** cuando se usa junto con web search o web fetch (solo se cobra cuando se usa de forma standalone). (4) **Fine-grained tool streaming** ahora GA en todos los modelos y plataformas (no solo Opus/Sonnet).
 - **Action required**: Monitorear
 - **Details**: El punto (1) simplifica integraciones existentes: remover headers beta de web search. El punto (3) hace económicamente viable usar code execution para pipelines que ya usen web search/fetch. El dynamic filtering (2) es especialmente útil para reducir context bloat en búsquedas con muchos resultados. Los cambios complementan y actualizan la entrada anterior del 2026-04-06 sobre features de marzo.
+
+---
+
+## [2026-04-07] Claude Code - filtración de código fuente vía error de packaging en npm (31 mar 2026)
+
+- **Source**: [CNBC](https://www.cnbc.com/2026/03/31/anthropic-leak-claude-code-internal-source.html) / [The Hacker News](https://thehackernews.com/2026/04/claude-code-tleaked-via-npm-packaging.html) / [The Register](https://www.theregister.com/2026/04/06/anthropic_code_leak_kettle_podcast/)
+- **Confidence**: Alta
+- **What changes**: El 31 de marzo de 2026, Anthropic expuso accidentalmente 512.000 líneas de código TypeScript (1.906 archivos) de Claude Code a través de un archivo `.map` de 59.8 MB incluido en el paquete npm `@anthropic-ai/claude-code` versión 2.1.88. El error ocurrió porque Bun genera source maps completos por defecto y el `.npmignore` no los excluía. Anthropic confirmó que no se expusieron credenciales ni datos de clientes. El código fue rápidamente espejado en GitHub y analizado por investigadores y actores maliciosos.
+- **Action required**: Monitorear
+- **Details**: El código filtrado reveló múltiples feature flags de capacidades inéditas: revisión de sesión automática, "persistent assistant" en background mode, y control remoto de Claude desde móvil/browser. Para equipos que usan Claude Code: no hay acción de seguridad inmediata requerida (no hay credenciales expuestas), pero el análisis del código puede revelar comportamientos internos del agente que no estaban documentados. Actualizar a versiones ≥2.1.89 que excluyen los source maps.
+
+---
+
+## [2026-04-07] LiteLLM supply chain attack por TeamPCP - PyPI comprometido 24 mar 2026
+
+- **Source**: [LiteLLM Security Update oficial](https://docs.litellm.ai/blog/security-update-march-2026) / [Snyk Blog](https://snyk.io/blog/poisoned-security-scanner-backdooring-litellm/) / [Kaspersky Blog](https://www.kaspersky.com/blog/critical-supply-chain-attack-trivy-litellm-checkmarx-teampcp/55510/) / [Cycode](https://cycode.com/blog/lite-llm-supply-chain-attack/)
+- **Confidence**: Alta
+- **What changes**: Extiende la entrada existente sobre TeamPCP/Trivy. El 24 de marzo de 2026, TeamPCP usó credenciales PyPI robadas mediante el CI/CD comprometido de LiteLLM (que usaba Trivy) para publicar versiones maliciosas: `litellm==1.82.7` y `litellm==1.82.8`. Estuvieron activas ~40 minutos (10:39–11:19 UTC). El payload era un archivo `.pth` (`litellm_init.pth`) que se ejecuta automáticamente en cada proceso Python al arrancar, robando todas las env vars, SSH keys, credenciales cloud y otros secrets. LiteLLM tiene ~95M de descargas mensuales y es una dependencia crítica de muchos stacks AI.
+- **Action required**: Urgente
+- **Details**: Si instalaste `litellm==1.82.7` o `litellm==1.82.8`, tratar el entorno como comprometido y rotar todos los secrets. La versión segura es `v1.83.0`+, construida con un nuevo pipeline CI/CD aislado. Los deployments via Docker image oficial de LiteLLM Proxy **no fueron afectados** (usan requirements.txt pinneados). Buscar `litellm_init.pth` en entornos Python como indicador de compromiso. Esta cadena es directa consecuencia del ataque previo a Trivy.
+
+---
+
+## [2026-04-07] CVE-2026-23745 - node-tar ≤7.5.2: arbitrary file overwrite y symlink poisoning (CVSS 8.2)
+
+- **Source**: [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-23745) / [GitLab Advisory](https://advisories.gitlab.com/pkg/npm/tar/CVE-2026-23745/) / [SentinelOne](https://www.sentinelone.com/vulnerability-database/cve-2026-23745/)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-23745 (CVSS 8.2, HIGH) afecta `node-tar` ≤7.5.2. La librería no sanitiza el campo `linkpath` de entradas hardlink y SymbolicLink cuando `preservePaths: false` (el modo seguro por defecto). Esto permite que archivos TAR maliciosos escriban fuera del directorio de extracción (path traversal a rutas absolutas como `/etc/passwd`), llevando a **arbitrary file overwrite** y potencial **RCE vía manipulación de archivos de configuración**.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `tar` (node-tar) a `>=7.5.3`. El paquete `tar` es una dependencia transitiva de npm CLI, Node-RED, y muchos otros proyectos — ejecutar `npm audit` para verificar. GHSA: `GHSA-8qq5-rm4j-mr97`. Descubierto en enero 2026, parcheado en 7.5.3. La vulnerabilidad se activa únicamente al extraer archivos TAR maliciosos (no afecta archivos TAR de confianza).
+
+---
+
+## [2026-04-07] CVE-2026-5281 - Chrome/Chromium use-after-free en Dawn/WebGPU, explotación activa, CISA deadline 15 abr
+
+- **Source**: [Help Net Security](https://www.helpnetsecurity.com/2026/04/01/google-chrome-zero-day-cve-2026-5281/) / [The Hacker News](https://thehackernews.com/2026/04/new-chrome-zero-day-cve-2026-5281-under.html) / [SOCRadar](https://socradar.io/blog/cve-2026-5281-chrome-webgpu-zero-day/) / [Security Affairs](https://securityaffairs.com/190265/hacking/google-fixes-fourth-actively-exploited-chrome-zero-day-of-2026.html)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-5281 es un use-after-free (CWE-416) en Dawn, la implementación WebGPU de Chromium. Permite a un atacante que comprometió el renderer process ejecutar código arbitrario via página HTML maliciosa. Explotación activa confirmada desde el 10 de marzo de 2026. Es el **cuarto zero-day de Chrome explotado en 2026**. CISA lo añadió al KEV catalog el 1 de abril de 2026.
+- **Action required**: Urgente
+- **Details**: Actualizar Chrome a `v146.0.7680.177` (Linux) o `v146.0.7680.178` (Windows/macOS). **Todos los navegadores basados en Chromium están afectados**: Microsoft Edge, Brave, Opera, Vivaldi — actualizar también. CISA deadline para agencias federales: **15 de abril de 2026** (8 días). El parche fue publicado out-of-band el 1 de abril de 2026.
+
+---
+
+## [2026-04-07] CVE-2025-15379 - MLflow 3.8.0: RCE crítico CVSS 10 por command injection en model serving
+
+- **Source**: [SentinelOne](https://www.sentinelone.com/vulnerability-database/cve-2025-15379/) / [TheHackerWire](https://www.thehackerwire.com/mlflow-critical-rce-via-model-artifact-command-injection/)
+- **Confidence**: Alta
+- **What changes**: CVE-2025-15379 (CVSS 10.0, CRÍTICO) afecta MLflow 3.8.0. La función `_install_model_dependencies_to_env()` interpola directamente especificaciones de dependencias del archivo `python_env.yaml` de un artifact en un comando shell sin sanitización. Un atacante que controle el artifact (modelo) puede ejecutar código arbitrario en el servidor de inferencia. Publicado el 30 de marzo de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar MLflow a `>=3.8.2`. El fix introduce escaping con `shlex` antes de construir el comando shell. El vector de ataque requiere que el atacante pueda subir o proporcionar un model artifact malicioso — especialmente crítico en plataformas MLOps donde usuarios externos pueden subir modelos. El parámetro `env_manager=LOCAL` es necesario para que la vulnerabilidad sea explotable.
+
+---
+
+## [2026-04-07] CVE-2026-33195 - Ruby on Rails Active Storage: path traversal en DiskService (CVSS 8.0)
+
+- **Source**: [Rails Security Announcement oficial](https://discuss.rubyonrails.org/t/cve-2026-33195-possible-path-traversal-in-active-storage-diskservice/90904) / [GitLab Advisory](https://advisories.gitlab.com/pkg/gem/activestorage/CVE-2026-33195/) / [CVEReports](https://cvereports.com/reports/CVE-2026-33195)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-33195 (CVSS 8.0, HIGH) afecta `activestorage` en Rails 7.2.x, 8.0.x y 8.1.x. `DiskService#path_for` no valida que el path resuelto permanezca dentro del directorio raíz de storage. Si un blob key contiene secuencias de path traversal (`../`), permite leer, escribir o borrar archivos arbitrarios del servidor — incluyendo RCE por sobreescritura de archivos de configuración.
+- **Action required**: Actualizar dependencia
+- **Details**: Versiones parcheadas: Rails `7.2.3.1`, `8.0.4.1`, `8.1.2.1`. La vulnerabilidad requiere que la aplicación use blob keys controlados por el usuario — si los keys son generados internamente por Rails, el riesgo es bajo. Aplicaciones que permitan a usuarios especificar paths de storage están en máximo riesgo. Verificar si se usa `DiskService` (no aplica a S3/GCS/Azure adapters).
+
+---
+
+## [2026-04-07] Anthropic API - data residency controls GA: parámetro inference_geo
+
+- **Source**: [Anthropic API Release Notes](https://platform.claude.com/docs/en/release-notes/overview) / [Releasebot Anthropic](https://releasebot.io/updates/anthropic)
+- **Confidence**: Alta
+- **What changes**: Anthropic introdujo controles de **data residency** con el nuevo parámetro `inference_geo` en la API. Permite especificar dónde se ejecuta la inferencia del modelo. La opción `US-only` está disponible a 1.1x el precio estándar, aplicable a modelos publicados después del 1 de febrero de 2026.
+- **Action required**: Monitorear
+- **Details**: Relevante para organizaciones con requisitos de compliance de datos (GDPR, HIPAA, contratos que exigen procesamiento en US). Añadir `inference_geo: "us"` en los parámetros de la request para forzar inferencia en US. El surcharge del 10% aplica por request. Complementa las features de abril 2026 documentadas en la entrada anterior.

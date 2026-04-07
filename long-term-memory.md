@@ -210,6 +210,66 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 
 ---
 
+## [2026-04-07] GitHub Actions - campaña activa de abuso de pull_request_target + roadmap de seguridad
+
+- **Source**: [GitHub Blog — 2026 Security Roadmap](https://github.blog/news-insights/product-news/whats-coming-to-our-github-actions-2026-security-roadmap/) / [GitHub Actions Early April 2026 Updates](https://github.blog/changelog/2026-04-02-github-actions-early-april-2026-updates/)
+- **Confidence**: Alta
+- **What changes**: El 2 de abril 2026, la cuenta `ezmtebo` envió 475+ PRs maliciosos en 26 horas explotando el trigger `pull_request_target`. Este trigger, a diferencia de `pull_request`, ejecuta en el contexto del repositorio base y tiene acceso a todos sus secrets incluso desde forks no confiables. GitHub respondió publicando su 2026 security roadmap con: (1) dependency locking de workflows via commit SHAs (public preview), (2) workflow execution protections via ruleset framework, (3) OIDC custom properties para cloud trust policies (GA abril 2026).
+- **Action required**: Monitorear
+- **Details**: Auditar inmediatamente todos los workflows con trigger `pull_request_target` que hagan checkout del código del PR — ese es el vector primario. El dependency locking y las políticas de ruleset aún están en public preview (3-6 meses para GA). Migración inmediata: reemplazar `pull_request_target` con `pull_request` donde sea posible, o asegurarse de no hacer checkout del código del PR en contexto privilegiado.
+
+---
+
+## [2026-04-07] Cursor 3.0 - multi-agent paralelo, Design Mode, Automations + cambio de precio Composer 2
+
+- **Source**: [Cursor 3 Blog](https://cursor.com/blog/cursor-3) / [Cursor Changelog](https://cursor.com/changelog)
+- **Confidence**: Alta
+- **What changes**: Cursor 3.0 (2 abr 2026) introduce cambios arquitectónicos: (1) **Agents Window** — ejecuta múltiples agentes en paralelo en repos separados, worktrees locales, nube o SSH remoto; (2) **Design Mode** — anota elementos UI en el browser para feedback preciso al agente; (3) **Agent Tabs** — múltiples chats side-by-side; (4) **`/worktree` command** — crea git worktrees aislados para agentes; (5) **30+ plugins** de Atlassian, Datadog, GitLab, Glean, Hugging Face, monday.com, PlanetScale; (6) **Automations** — agentes always-on disparados por Slack, Linear, GitHub, PagerDuty, webhooks o schedules. Además, **Composer 2** (19 mar 2026) cambió la estructura de precios: Standard $0.50/M input + $2.50/M output; Fast (default) $1.50/M input + $7.50/M output.
+- **Action required**: Monitorear
+- **Details**: El tier "Fast" es ahora el default y es ~3x más caro que Standard. Equipos con usage-based billing deben auditar el impacto de costos inmediatamente. La arquitectura multi-agente paralela es un cambio fundamental — los workflows de un solo agente siguen funcionando pero las integraciones CI/CD pueden requerir revisión con el sistema de Automations.
+
+---
+
+## [2026-04-07] GitHub Copilot - SDK en public preview + cambio de política de privacidad (opt-in training data)
+
+- **Source**: [GitHub Copilot SDK Public Preview](https://github.blog/changelog/2026-04-02-copilot-sdk-in-public-preview/) / [GitHub Copilot Org Custom Instructions GA](https://github.blog/changelog/2026-04-02-copilot-organization-custom-instructions-are-generally-available/) / [InfoQ — Training Data Policy](https://www.infoq.com/news/2026/04/github-copilot-training-data/)
+- **Confidence**: Alta
+- **What changes**: Tres cambios simultáneos el 2 de abril 2026: (1) **Copilot SDK en public preview** para Node.js/TypeScript, Python, Go, .NET y Java — permite embeber capacidades agénticas de Copilot en aplicaciones propias con tool invocation, streaming, file ops, multi-turn conversations, OpenTelemetry tracing y BYOK. (2) **Org-level custom instructions GA** — admins de Business/Enterprise pueden definir instrucciones por defecto para todos los repos. (3) **Cambio de política de privacidad efectivo 24 abril 2026**: datos de interacción (inputs, outputs, code snippets, contexto) de usuarios Free/Pro/Pro+ se usarán para entrenamiento de modelos por defecto. Business y Enterprise no afectados.
+- **Action required**: Urgente
+- **Details**: El punto (3) es el más crítico: cualquier desarrollador en plan individual que trabaje con código propietario o sensible debe ir a Settings > Privacy y deshabilitar el uso para entrenamiento ANTES del 24 de abril. El SDK (punto 1) consume quotas de premium requests. La org custom instructions (punto 2) es aditiva.
+
+---
+
+## [2026-04-07] Google Gemini API - modelos Pro detrás de paywall + deprecaciones múltiples
+
+- **Source**: [Gemini API Changelog](https://ai.google.dev/gemini-api/docs/changelog) / [Gemini API Deprecations](https://ai.google.dev/gemini-api/docs/deprecations)
+- **Confidence**: Alta
+- **What changes**: Dos cambios con impacto breaking: (1) **Pro models paywalled** (efectivo 1 abril 2026): el free tier ahora solo cubre modelos Flash y Flash-Lite — cualquier código usando `gemini-3-pro`, `gemini-2.5-pro` u otros modelos Pro con API key gratuita falla con error. Se introdujeron nuevos tiers Flex y Priority inference y planes Prepay/Postpay. (2) **Deprecaciones ya activas**: `gemini-2.5-flash-lite-preview-09-2025` shutdowneado el 31 mar 2026 (migrar a `gemini-3.1-flash-lite-preview`), `gemini-3-pro-preview` shutdowneado el 9 mar 2026 (migrar a `gemini-3.1-pro-preview`). **Próximas deprecaciones**: `gemini-2.0-flash` y variantes sunset 1 jun 2026; `gemini-2.5-pro` (stable) sunset 17 jun 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Cualquier integración con Gemini API debe auditarse: (a) verificar si usa modelos ya deprecados (errores inmediatos), (b) verificar si usa modelos Pro en free tier (errores desde 1 abril), (c) planificar migración de `gemini-2.0-flash` y `gemini-2.5-pro` antes de junio 2026.
+
+---
+
+## [2026-04-07] Claude Code 2.1.91-2.1.92 - nuevas features de hook system y Bedrock setup
+
+- **Source**: [Claude Code CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md)
+- **Confidence**: Alta
+- **What changes**: Versiones 2.1.91-2.1.92 (1-4 abr 2026) añaden sobre las features anteriores: (1) Campo `"defer"` en decisiones de permisos para hooks `PreToolUse` — el hook puede diferir la decisión en vez de aprobar/denegar. (2) Campo condicional `if` para hooks (desde v2.1.85) — ejecuta hooks condicionalmente sin modificar la lógica del agente. (3) Write tool 60% más rápido en diff computation para archivos grandes con tabs/`&`/`$`. (4) `forceRemoteSettingsRefresh` — nueva policy setting para forzar refresco de settings remotos. (5) Asistente interactivo de setup para **AWS Bedrock** (wizard). (6) `/cost` ahora muestra breakdown por modelo y por cache hit.
+- **Action required**: Monitorear
+- **Details**: El campo `"defer"` en hooks es especialmente útil para pipelines de aprobación en CI/CD que necesitan consultar un sistema externo antes de decidir. El wizard de Bedrock reduce significativamente la fricción de setup en entornos AWS. Actualizar a 2.1.92 para recibir todas las mejoras.
+
+---
+
+## [2026-04-07] Mistral Small 4 - modelo unificado 256k contexto + Voxtral TTS API
+
+- **Source**: [Mistral API Changelog](https://docs.mistral.ai/getting-started/changelog)
+- **Confidence**: Alta
+- **What changes**: Dos releases en marzo 2026: (1) `mistral-small-2603` (16 mar) — modelo híbrido MoE (119B total, 6B activos/token) que consolida instruction-following, razonamiento, visión y coding en un solo endpoint. 256k de contexto. Afirma 40% reducción en latencia vs modelos previos. Reemplaza cuatro modelos separados. (2) `voxtral-tts-2603` (23 mar) — TTS API con zero-shot voice cloning, 9 idiomas, streaming de baja latencia y voces custom. Precio: $0.016/1k caracteres.
+- **Action required**: Monitorear
+- **Details**: El `mistral-small-2603` es relevante para quienes mantienen routing lógico separado por capacidad (razonamiento vs visión vs coding) con Mistral — pueden simplificar a un único endpoint. El TTS `voxtral-tts-2603` abre un nuevo vector de integración para aplicaciones de voz. Zero-shot voice cloning es notable para personalización.
+
+---
+
 ## [2026-04-07] Anthropic API - features adicionales de abril 2026 no capturadas previamente
 
 - **Source**: [Anthropic API Release Notes](https://docs.anthropic.com/en/release-notes/overview) / [Releasebot Anthropic April 2026](https://releasebot.io/updates/anthropic)

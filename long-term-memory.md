@@ -387,3 +387,33 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Complementa la entrada del 2026-04-07 sobre Copilot SDK. Nuevas capacidades del Copilot cloud agent en abril 2026: (1) **Commits firmados**: todos los commits del cloud agent aparecen como **Verified** en GitHub (firmados con clave de Anthropic/GitHub). (2) **Agent firewall integrado**: bloquea acceso a internet del agente para proteger contra prompt injection y data exfiltration. (3) **@copilot en PRs**: mencionar `@copilot` en comentarios de PR instruye al agente a hacer cambios en su propio entorno cloud. (4) **Copilot coding agent management REST API** (public preview): programmatic control de acceso por repo para org owners.
 - **Action required**: Monitorear
 - **Details**: El agent firewall es especialmente relevante para entornos enterprise donde el código puede tener datos sensibles. Evaluar si la restricción de internet del agente impacta workflows que necesiten que Copilot busque documentación externa. Los commits verificados mejoran auditoría en repos con requisitos de compliance.
+
+---
+
+## [2026-04-08] Python 3.14.4 - patch de seguridad: 3 CVEs + HTTP header injection
+
+- **Source**: [Python Release Python 3.14.4 | Python.org](https://www.python.org/downloads/release/python-3144/)
+- **Confidence**: Alta
+- **What changes**: Python 3.14.4 (7 abril 2026) incluye ~337 bugfixes y las siguientes correcciones de seguridad: (1) **CVE-2026-4224** — crash por recursión C no acotada en `xml.parsers.expat` con `ElementDeclHandler()`. (2) **CVE-2026-3644** — caracteres de control no rechazados en `http.cookies.Morsel.update()` y `js_output()`. (3) **CVE-2026-2297** — `SourcelessFileLoader` ahora usa `io.open_code()` al abrir `.pyc`. (4) HTTP header injection en `wsgiref.handlers` (sin CVE asignado). (5) Memory DoS potencial en `http.server` CGI handler en Windows. (6) Guiones iniciales rechazados en URLs de `webbrowser.open()`.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a Python 3.14.4 si se usa alguno de: `xml.parsers.expat`, `http.cookies`, `http.server` CGI handler (especialmente en Windows), o `wsgiref`. El CVE-2026-4224 (crash en expat) es el más crítico para servicios que parsean XML desde fuentes no confiables. Complementa la entrada anterior de Python 3.14 (free-threading, t-strings).
+
+---
+
+## [2026-04-08] Vercel - actualizaciones adicionales 7-8 abril 2026
+
+- **Source**: [Vercel Changelog](https://vercel.com/changelog) / [Vercel Weekly 2026-04-06](https://community.vercel.com/t/vercel-weekly-2026-04-06/37604)
+- **Confidence**: Alta
+- **What changes**: Items adicionales a la entrada anterior del Vercel Weekly, todos confirmados en el changelog oficial: (1) **Team-wide Zero Data Retention en AI Gateway** — las org pueden forzar ZDR y controles de prompt training para todos los providers soportados desde el nivel de equipo (relevante para compliance). (2) **Vercel Sandbox**: hasta **32 vCPU + 64 GB RAM** para Enterprise (vs. límites anteriores). (3) **Turborepo 2.9**: mejora de rendimiento de hasta **96%** via AI agents + Vercel Sandboxes; nueva integración que pareliza tareas con agentes. (4) **Go support**: deploy de backends Go en Vercel sin configuración adicional (zero-config). (5) **CDN**: ahora respeta headers `Cache-Control` de orígenes externos por defecto (cambio de comportamiento — revisar si dependías del behavior anterior). (6) **Queues**: TTL de mensajes extendido a 7 días.
+- **Action required**: Monitorear
+- **Details**: El cambio de CDN (punto 5) es el más propenso a causar comportamiento inesperado — si tienes orígenes externos con headers de cache permisivos, Vercel ahora los respetará automáticamente en lugar de usar sus propios defaults. Revisar la configuración de `Cache-Control` en orígenes externos antes de hacer deploy en Vercel.
+
+---
+
+## [2026-04-08] Axios/UNC1069 - actor expande targeting a Lodash, Fastify, dotenv, mocha
+
+- **Source**: [The Hacker News (3 abr 2026)](https://thehackernews.com/2026/04/unc1069-social-engineering-of-axios.html) / [Elastic Security Labs](https://www.elastic.co/security-labs/axios-one-rat-to-rule-them-all) / [Google Cloud Threat Intel](https://cloud.google.com/blog/topics/threat-intelligence/north-korea-threat-actor-targets-axios-npm-package)
+- **Confidence**: Alta
+- **What changes**: Extiende la entrada del 2026-04-06 sobre el ataque a Axios. Nuevos detalles publicados el 3 de abril confirman que UNC1069/Sapphire Sleet no se limitó a Axios: el mismo actor realizó campañas de social engineering paralelas contra mantenedores de **Lodash, Fastify, dotenv, mocha** y colaboradores del core de Node.js. Vector de ataque documentado: llamadas falsas de Microsoft Teams con error de "system update", luego lures en LinkedIn posando como "Openfort", y prompts falsos de Streamyard. El malware identificado es **WAVESHAPER.V2**, dependencia maliciosa `plain-crypto-js`, postinstall hook contactando `sfrclak[.]com:8000` para payloads de stage 2.
+- **Action required**: Urgente
+- **Details**: Si tu stack incluye Lodash, Fastify, dotenv o mocha, verificar también esas dependencias en el período del 31 de marzo 2026. IOCs adicionales: dominio C2 `sfrclak[.]com:8000`, paquete npm `plain-crypto-js`. El alcance del ataque es significativamente mayor de lo que se reportó inicialmente — no limitado a Axios.

@@ -417,3 +417,53 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Extiende la entrada del 2026-04-06 sobre el ataque a Axios. Nuevos detalles publicados el 3 de abril confirman que UNC1069/Sapphire Sleet no se limitó a Axios: el mismo actor realizó campañas de social engineering paralelas contra mantenedores de **Lodash, Fastify, dotenv, mocha** y colaboradores del core de Node.js. Vector de ataque documentado: llamadas falsas de Microsoft Teams con error de "system update", luego lures en LinkedIn posando como "Openfort", y prompts falsos de Streamyard. El malware identificado es **WAVESHAPER.V2**, dependencia maliciosa `plain-crypto-js`, postinstall hook contactando `sfrclak[.]com:8000` para payloads de stage 2.
 - **Action required**: Urgente
 - **Details**: Si tu stack incluye Lodash, Fastify, dotenv o mocha, verificar también esas dependencias en el período del 31 de marzo 2026. IOCs adicionales: dominio C2 `sfrclak[.]com:8000`, paquete npm `plain-crypto-js`. El alcance del ataque es significativamente mayor de lo que se reportó inicialmente — no limitado a Axios.
+
+---
+
+## [2026-04-08] Anthropic Claude Mythos Preview + Project Glasswing - modelo más potente, solo acceso restringido
+
+- **Source**: [TechCrunch](https://techcrunch.com/2026/04/07/anthropic-mythos-ai-model-preview-security/) / [CNBC](https://www.cnbc.com/2026/04/07/anthropic-claude-mythos-ai-hackers-cyberattacks.html) / [VentureBeat](https://venturebeat.com/technology/anthropic-says-its-most-powerful-ai-cyber-model-is-too-dangerous-to-release) / [CyberScoop](https://cyberscoop.com/project-glasswing-anthropic-ai-open-source-software-vulnerabilities/) / [Anthropic API Release Notes](https://platform.claude.com/docs/en/release-notes/api)
+- **Confidence**: Alta
+- **What changes**: Anthropic anunció el 7 de abril 2026 **Claude Mythos Preview**, descrito como su "modelo frontera más poderoso hasta la fecha". **No se lanzará públicamente** por riesgo de ciberseguridad. Acceso exclusivo vía **Project Glasswing** (iniciativa de ciberseguridad defensiva con 12+ socios: AWS, Apple, Broadcom, Cisco, CrowdStrike, Google, JPMorganChase, Linux Foundation, Microsoft, NVIDIA, Palo Alto Networks + 40 organizaciones). Benchmarks confirmados: SWE-bench Verified 93.9%, GPQA Diamond 94.6%, CyberGym 83.1%, Terminal-Bench 2.0 82.0%, USAMO 2026 97.6%. Demostración: encontró un bug de 27 años en OpenBSD y uno de 16 años en FFmpeg que evadió 5M tests automáticos.
+- **Action required**: Monitorear
+- **Details**: Anthropic comprometió $100M en usage credits a los participantes, $4M en financiamiento a open-source (Alpha-Omega/OpenSSF y Apache Foundation). Precio restringido: $25/M input, $125/M output (5x Opus 4.6). Disponible en Claude API, Bedrock, Vertex AI y Microsoft Foundry (todos con acceso por invitación). Ventana de disclosure público de vulnerabilidades: 90 días desde el 7 de abril. Para equipos con necesidades de seguridad avanzada: contactar a Anthropic para acceso a Project Glasswing.
+
+---
+
+## [2026-04-08] Claude Code v2.1.94 - cambio de comportamiento: effort level default ahora es HIGH
+
+- **Source**: [Claude Code GitHub Releases](https://github.com/anthropics/claude-code/releases)
+- **Confidence**: Alta
+- **What changes**: Claude Code v2.1.94 (7 abril 2026) cambió el **effort level por defecto de `medium` a `high`** para usuarios con API key propia, Bedrock/Vertex/Foundry, Team y Enterprise. Esto aumenta la calidad de respuestas pero también el costo por request y la latencia. Otras features: soporte de Amazon Bedrock via Mantle (`CLAUDE_CODE_USE_MANTLE=1`), headers compactos de Slack con links en MCP, campo `keep-coding-instructions` en frontmatter, campo `hookSpecificOutput.sessionTitle` en hooks `UserPromptSubmit`. Fixes: agentes bloqueados tras 429s, login en macOS con keychain bloqueado, hooks en YAML frontmatter ignorados.
+- **Action required**: Monitorear
+- **Details**: El cambio de effort level es el más impactante operativamente: **revisar costos de API** si usas Claude Code v2.1.94+. Si se necesita el comportamiento anterior (medium), se puede configurar manualmente via settings. `v2.1.96` (8 abril) incluye un fix para requests a Bedrock fallando con 403 "Authorization header is missing" cuando se usaban `AWS_BEARER_TOKEN_BEDROCK` o `CLAUDE_CODE_SKIP_BEDROCK_AUTH` (regresión de 2.1.94).
+
+---
+
+## [2026-04-08] GitHub Copilot CLI - BYOK + modelos locales + deprecaciones GPT-5.1 Codex
+
+- **Source**: [GitHub Changelog - April 2026](https://github.blog/changelog/month/04-2026/)
+- **Confidence**: Alta
+- **What changes**: Tres cambios en el período 1-7 abril 2026: (1) **Copilot CLI BYOK + local models** (7 abril): Copilot CLI permite conectar tu propio proveedor de modelo o ejecutar modelos **completamente locales** en lugar de routing a servidores de GitHub. (2) **GPT-5.1 Codex, GPT-5.1-Codex-Max, GPT-5.1-Codex-Mini deprecated** efectivo 1 abril 2026 — cualquier integración Copilot que especifique explícitamente esos model IDs falla. (3) **Code Review Metrics** (6 abril): admins de org pueden distinguir engagement activo vs. pasivo con Copilot code review en usage reports.
+- **Action required**: Monitorear
+- **Details**: El BYOK + local models es relevante para equipos con restricciones de privacidad de código (legal, finanzas, govtech) que antes no podían usar Copilot CLI. La deprecación de GPT-5.1 Codex es urgente si hay integraciones programáticas que especifiquen esos model IDs.
+
+---
+
+## [2026-04-08] Gemma 4 open model - Apache 2.0, 256K contexto, multimodal (Google, 2 abril 2026)
+
+- **Source**: [Google Blog - Gemma 4](https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/) / [Android Developers Blog - AICore](https://android-developers.googleblog.com/2026/04/AI-Core-Developer-Preview.html)
+- **Confidence**: Alta
+- **What changes**: Google lanzó **Gemma 4** el 2 de abril 2026 como modelo open-weight con licencia Apache 2.0. Cuatro variantes: E2B, E4B, **26B MoE**, **31B Dense**. Capacidades: 256K contexto, 140+ idiomas, multimodal (imágenes + texto), tool-calling. Disponible en Hugging Face, Kaggle, Google AI Studio. También: **AICore Developer Preview** para Android — código escrito para Gemma 4 se ejecuta automáticamente en dispositivos Gemini Nano 4; **AI Edge Gallery** para iPhone ejecuta Gemma 4 localmente.
+- **Action required**: Monitorear
+- **Details**: Las variantes 26B MoE y 31B Dense de Gemma 4 ya están disponibles en Vercel AI Gateway (ver entrada anterior). La licencia Apache 2.0 permite uso comercial sin restricciones. Para equipos que buscan modelos open-weight como alternativa a APIs propietarias: Gemma 4 con 256K contexto y multimodal es el estado del arte en modelos open-weight disponibles hoy.
+
+---
+
+## [2026-04-08] Anthropic Messages API en Amazon Bedrock - research preview, endpoint nativo
+
+- **Source**: [Anthropic API Release Notes - 7 abr 2026](https://platform.claude.com/docs/en/release-notes/api) / [AWS What's New](https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-bedrock-claude-mythos/)
+- **Confidence**: Alta
+- **What changes**: Anthropic lanzó el 7 de abril 2026 un **Messages API nativo en Amazon Bedrock** (research preview) en `us-east-1`. Endpoint: `/anthropic/v1/messages` — **idéntico en forma de request a la API de primera parte de Anthropic**. Características: zero operator access (AWS gestiona toda la infraestructura), sin necesidad de adaptar código entre la API de Anthropic y Bedrock.
+- **Action required**: Monitorear
+- **Details**: Para equipos que usan tanto la Claude API directa como Bedrock: este endpoint elimina la necesidad de wrappers o adaptadores. Acceso por solicitud al account executive de Anthropic. Complementa el soporte de Bedrock via Mantle en Claude Code v2.1.94.

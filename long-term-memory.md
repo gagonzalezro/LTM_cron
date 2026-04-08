@@ -467,3 +467,153 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Anthropic lanzó el 7 de abril 2026 un **Messages API nativo en Amazon Bedrock** (research preview) en `us-east-1`. Endpoint: `/anthropic/v1/messages` — **idéntico en forma de request a la API de primera parte de Anthropic**. Características: zero operator access (AWS gestiona toda la infraestructura), sin necesidad de adaptar código entre la API de Anthropic y Bedrock.
 - **Action required**: Monitorear
 - **Details**: Para equipos que usan tanto la Claude API directa como Bedrock: este endpoint elimina la necesidad de wrappers o adaptadores. Acceso por solicitud al account executive de Anthropic. Complementa el soporte de Bedrock via Mantle en Claude Code v2.1.94.
+
+---
+
+## [2026-04-08] CVE-2026-34040 - Docker Engine: AuthZ plugin bypass via body truncation (CVSS 8.8)
+
+- **Source**: [Docker official blog](https://www.docker.com/blog/docker-security-advisory-docker-engine-authz-plugin/) / [The Hacker News](https://thehackernews.com/2026/04/docker-cve-2026-34040-lets-attackers.html) / [Cyera Research](https://www.cyera.com/blog/cyera-research-discovers-docker-authorization-bypass-that-silently-disables-security-policies)
+- **Confidence**: Alta
+- **What changes**: Requests a la API de Docker >1 MB son silenciosamente truncados antes de llegar a los AuthZ plugins (OPA, Prisma Cloud, plugins custom), pero el daemon procesa el request completo. Permite creación de contenedores privilegiados y acceso al filesystem del host. Regresión de CVE-2024-41110. Revelado el 7 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar Docker Engine a `29.3.1` / Docker Desktop a `4.66.1`. Afecta cualquier deployment que use AuthZ plugins para control de acceso — si no se usan plugins de autorización, el riesgo es bajo. Docker EE/Mirantis: verificar actualizaciones del vendor.
+
+---
+
+## [2026-04-08] CVE-2026-33105 - Azure Kubernetes Service: escalada de privilegios sin autenticación (CVSS 10.0)
+
+- **Source**: [TheHackerWire](https://www.thehackerwire.com/azure-kubernetes-service-critical-privilege-escalation-cve-2026-33105/) / [CVEDetails](https://www.cvedetails.com/cve/CVE-2026-33105/) / [CIRCL](https://vulnerability.circl.lu/vuln/cve-2026-33105)
+- **Confidence**: Alta
+- **What changes**: Un atacante de red sin autenticación puede eludir los controles RBAC y escalar privilegios hasta obtener control de workloads en AKS. Revelado el 3 de abril de 2026. Patch disponible via Azure Update Manager desde el mismo día.
+- **Action required**: Urgente
+- **Details**: Aplicar el patch de seguridad de abril 2026 via Azure Update Manager inmediatamente. Verificar todos los clusters AKS. El vector no requiere autenticación previa — la exposición desde red externa es posible.
+
+---
+
+## [2026-04-08] CVE-2026-34197 - Apache ActiveMQ Classic: RCE via Jolokia JMX-HTTP bridge (CVSS 8.8)
+
+- **Source**: [Horizon3.ai](https://horizon3.ai/attack-research/disclosures/cve-2026-34197-activemq-rce-jolokia/) / [CVEFeed NVD](https://cvefeed.io/vuln/detail/CVE-2026-34197) / [TheHackerWire](https://www.thehackerwire.com/apache-activemq-code-injection-via-jolokia-jmx-http-bridge/)
+- **Confidence**: Alta
+- **What changes**: Atacante invoca `BrokerService.addNetworkConnector()` via Jolokia en `/api/jolokia/` con una URI de discovery maliciosa, disparando carga de un contexto Spring XML remoto y ejecución arbitraria de comandos OS. En versiones 6.0.0–6.1.1 es efectivamente sin autenticación (CVE-2024-32114). Revelado el 7 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a ActiveMQ Classic `5.19.4` o `6.2.3`. CVEs previos de ActiveMQ han sido explotados activamente por ransomware — el riesgo de explotación activa es alto. Deshabilitar el endpoint Jolokia (`/api/jolokia/`) si no es necesario como mitigación inmediata.
+
+---
+
+## [2026-04-08] CVE-2026-34208 - @nyariv/sandboxjs: sandbox escape por prototype pollution (CVSS 10.0)
+
+- **Source**: [DEV.to/ThreatChain](https://dev.to/threatchain/cve-2026-34208-javascript-sandbox-library-cant-keep-attackers-out-5li) / [TheHackerWire](https://www.thehackerwire.com/vulnerability/CVE-2026-34208/) / [THREATINT](https://cve.threatint.eu/CVE/CVE-2026-34208)
+- **Confidence**: Alta
+- **What changes**: Constructor prototype pollution en `@nyariv/sandboxjs` (<0.8.36) permite que código dentro del sandbox escriba propiedades arbitrarias en globals del host, persistiendo across all sandbox instances del proceso. Revelado el 6 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a `@nyariv/sandboxjs >= 0.8.36`. Si se usa esta librería para ejecutar código de usuarios no confiables, tratar cualquier ejecución previa como potencialmente comprometida. No hay workaround viable — solo el upgrade soluciona el problema.
+
+---
+
+## [2026-04-08] CVE-2026-33744 - BentoML <1.4.37: command injection en bentofile.yaml (CVSS 7.8)
+
+- **Source**: [SentinelOne](https://www.sentinelone.com/vulnerability-database/cve-2026-33744/)
+- **Confidence**: Media
+- **What changes**: El campo `docker.system_packages` en `bentofile.yaml` se interpola directamente en comandos Dockerfile `RUN` sin sanitización. Permite RCE durante el build del contenedor en pipelines CI/CD que procesen configs no confiables. Revelado el 3 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar BentoML a `>=1.4.37` (el fix introduce escaping con `shlex`). El riesgo es mayor en plataformas MLOps donde usuarios externos pueden subir bentofiles. Requiere `env_manager=LOCAL` para ser explotable.
+
+---
+
+## [2026-04-08] 36 paquetes npm maliciosos (strapi-plugin-*): ataque quirúrgico a exchange cripto
+
+- **Source**: [The Hacker News](https://thehackernews.com/2026/04/36-malicious-npm-packages-exploited.html) / [CyberSecurityNews](https://cybersecuritynews.com/36-malicious-npm-strapi-packages/) / [SecurityWeek](https://www.securityweek.com/guardarian-users-targeted-with-malicious-strapi-npm-packages/)
+- **Confidence**: Alta
+- **What changes**: Descubierto el 5 de abril de 2026. 36 paquetes `strapi-plugin-*` publicados por 4 cuentas sock-puppet. 8 variantes de payload evolucionadas en 13 horas: desde RCE Redis y Docker container escape hasta explotación directa de PostgreSQL e implantes C2 persistentes. La variante final (v3.6.8) solo se activa si `hostname === 'prod-strapi'` — ataque dirigido a Guardarian (exchange de criptomonedas). Distinto del ataque Axios/UNC1069 documentado previamente.
+- **Action required**: Urgente
+- **Details**: Auditar `package.json` por paquetes `strapi-plugin-*` de publishers desconocidos. IOCs: cuentas npm `umarbek1233`, `kekylf12`, `tikeqemif26`, `umar_bektembiev1`; archivo `.node_gc.js` en `/tmp/` reinstalado cada minuto via cron; directorio `.truffler-cache/` en `node_modules`. Los scripts `postinstall` ejecutan el payload automáticamente al instalar.
+
+---
+
+## [2026-04-08] Go 1.26.2 / 1.25.9 - security releases (CVE-2026-32288, CVE-2026-32283)
+
+- **Source**: [Go Release History](https://go.dev/doc/devel/release) / [golang-announce](https://groups.google.com/g/golang-announce/c/0uYbvbPZRWU) / [TechRepublic](https://www.techrepublic.com/article/news-golang-patches-security-flaws/)
+- **Confidence**: Alta
+- **What changes**: Publicados el 7 de abril de 2026. (1) CVE-2026-32288 (`archive/tar`): unbounded memory allocation al leer archivos TAR maliciosos con sparse map formato GNU antiguo — DoS/OOM. (2) CVE-2026-32283 (`crypto/tls`): deadlock DoS si múltiples key-update messages llegan en un solo post-handshake record en TLS 1.3. Fixes adicionales en `crypto/x509`, `html/template`, `os`, y el compilador.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a Go 1.26.2 (rama 1.26.x) o 1.25.9 (rama 1.25.x). El CVE-2026-32288 afecta cualquier servicio que procese archivos TAR desde fuentes no confiables. El CVE-2026-32283 afecta servidores TLS 1.3 expuestos a internet.
+
+---
+
+## [2026-04-08] Kubernetes ingress-nginx: EOL definitivo 24 marzo 2026 — migrar a Gateway API
+
+- **Source**: [Kubernetes Blog](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/) / [ingress2gateway 1.0](https://kubernetes.io/blog/2026/03/20/ingress2gateway-1-0-release/)
+- **Confidence**: Alta
+- **What changes**: Desde el 24 de marzo de 2026, el repo `kubernetes/ingress-nginx` es read-only. Sin más releases, security patches ni bug fixes. **No confundir** con F5/NGINX Inc.'s `nginx-ingress` — ese sigue activo. La herramienta de migración `ingress2gateway` 1.0 fue lanzada el 20 de marzo de 2026.
+- **Action required**: Migrar
+- **Details**: Deployments existentes siguen funcionando pero quedarán expuestos a CVEs sin parche indefinidamente. `ingress2gateway` 1.0 soporta 30+ annotations y genera recursos Gateway API. Alternativas mantenidas: Traefik, HAProxy Ingress, Kong, Envoy/Contour. Planificar migración urgente.
+
+---
+
+## [2026-04-08] Kubernetes v1.36 (release 22 abril): breaking changes confirmados
+
+- **Source**: [Kubernetes Blog Sneak Peek](https://kubernetes.io/blog/2026/03/30/kubernetes-v1-36-sneak-peek/)
+- **Confidence**: Alta
+- **What changes**: Release el 22 de abril de 2026 (14 días). Breaking changes: (1) **`gitRepo` volume driver eliminado** (deprecado desde v1.11) — workloads que lo usen fallarán; migrar a init containers o git-sync. (2) **HPA Scale to Zero habilitado por defecto** (`HPAScaleToZero` GA) — puede afectar autoscaling inesperadamente. (3) **`spec.externalIPs` en Services deprecado** (CVE-2020-8554, vector MITM); eliminación en v1.43. (4) **Modo IPVS en kube-proxy deprecado**.
+- **Action required**: Monitorear
+- **Details**: Verificar `gitRepo` volume usage con `kubectl get pods --all-namespaces -o yaml | grep gitRepo` antes del 22 de abril. El HPA Scale to Zero puede causar cold starts en workloads que no se esperan escalar a cero. Planificar migración de IPVS y `externalIPs`.
+
+---
+
+## [2026-04-08] Shopify April 2026: breaking changes live ahora — Scripts EOL 30 junio
+
+- **Source**: [Weaverse Blog](https://weaverse.io/blogs/shopify-developer-breaking-changes-april-2026) / [Shopify Changelog](https://changelog.shopify.com/posts/shopify-scripts-can-no-longer-be-edited-or-published)
+- **Confidence**: Alta
+- **What changes**: Cuatro cambios con fechas concretas para apps Shopify/Hydrogen: (1) **Tokens expirantes obligatorios** (activo desde 1 abril): nuevas apps públicas solo pueden usar expiring offline access tokens. (2) **JSON metafield cap 128KB** en API 2026-04. (3) **Shopify Scripts freeze** (15 abril): no se puede editar ni publicar nuevos Scripts; se detienen definitivamente el **30 junio 2026** — migrar a Shopify Functions. (4) **CLI `--force` eliminado** (mayo 2026): reemplazar por `--allow-updates`/`--allow-deletes` en pipelines CI/CD.
+- **Action required**: Migrar
+- **Details**: El deadline de Shopify Scripts es el más urgente: 15 abril para dejar de editar, 30 junio para que dejen de ejecutarse. Auditar todos los Scripts activos y planificar migración a Shopify Functions ahora.
+
+---
+
+## [2026-04-08] Apple App Store: Xcode 26 e iOS 26 SDK obligatorios desde 28 abril 2026
+
+- **Source**: [Apple Developer - Upcoming Requirements](https://developer.apple.com/news/upcoming-requirements/) / [9to5Mac](https://9to5mac.com/2026/02/03/apple-to-update-minimum-sdk-requirements-for-all-app-store-submissions/)
+- **Confidence**: Alta
+- **What changes**: Desde el 28 de abril de 2026 (20 días), todas las nuevas submissions al App Store deben compilarse con Xcode 26 y los SDKs de iOS 26/iPadOS 26/tvOS 26/visionOS 26/watchOS 26. Side effect: apps compiladas con iOS 26 SDK adoptan el estilo visual "Liquid Glass" en componentes nativos UI por defecto — puede cambiar el aspecto visual de la app.
+- **Action required**: Urgente
+- **Details**: Actualizar el entorno CI/CD a Xcode 26 antes del 28 de abril. Revisar visualmente la UI de la app compilada con el SDK de iOS 26 para detectar cambios por "Liquid Glass" no deseados. No cambia el requisito mínimo de iOS en runtime para usuarios finales.
+
+---
+
+## [2026-04-08] OpenAI Codex: pay-as-you-go + GPT-5.4 Tool Search para MCP/agentes con muchas tools
+
+- **Source**: [OpenAI Codex flexible pricing](https://openai.com/index/codex-flexible-pricing-for-teams/) / [gHacks](https://www.ghacks.net/2026/04/03/openai-adds-pay-as-you-go-codex-seats-for-chatgpt-business-and-enterprise-teams/) / [OpenAI Tool Search Docs](https://developers.openai.com/api/docs/guides/tools-tool-search)
+- **Confidence**: Alta
+- **What changes**: Dos cambios en OpenAI no cubiertos en entradas anteriores: (1) **Codex pay-as-you-go** (3 abril): seats Codex-only sin coste fijo, billing por tokens; ChatGPT Business bajó de $25 a $20/mes/seat; promo $500 en créditos por workspace nuevo. (2) **GPT-5.4 Tool Search** en Responses API: el modelo ve solo nombres/descripciones de tools al inicio y recupera los schemas completos on-demand. Reduce significativamente el consumo de tokens en sistemas con muchas tools (MCP servers, agentes con 100+ tools).
+- **Action required**: Monitorear
+- **Details**: El Tool Search solo está disponible en `gpt-5.4`, `gpt-5.4-mini` y superiores (no en `gpt-5.4-nano`). Para integraciones programáticas de Codex: los model IDs `gpt-5.2-codex`, `gpt-5.1-codex*`, `gpt-5.1`, `gpt-5` se eliminan del Codex for ChatGPT el **14 de abril** — auditar integraciones con urgencia.
+
+---
+
+## [2026-04-08] Cohere Transcribe: ASR open-source Apache 2.0, lidera HF Open ASR Leaderboard (WER 5.42)
+
+- **Source**: [Cohere Blog](https://cohere.com/blog/transcribe) / [TechCrunch](https://techcrunch.com/2026/03/26/cohere-launches-an-open-source-voice-model-specifically-for-transcription/) / [Hugging Face](https://huggingface.co/blog/CohereLabs/cohere-transcribe-03-2026-release)
+- **Confidence**: Alta
+- **What changes**: Cohere lanzó el 26 de marzo de 2026 `cohere-transcribe-03-2026`, modelo ASR de 2B parámetros con licencia Apache 2.0. Lidera el Open ASR Leaderboard de Hugging Face (WER 5.42) en 14 idiomas. Auto-hostable en GPUs consumer. Disponible gratis via Cohere API.
+- **Action required**: Monitorear
+- **Details**: Alternativa open-weight al estado del arte en speech-to-text (Whisper, AssemblyAI). Apache 2.0 permite uso comercial sin restricciones. Los 14 idiomas soportados incluyen inglés, español, francés, alemán, japonés y chino. Para equipos que buscan ASR auto-hospedado o gratuito, es el nuevo referente open-source.
+
+---
+
+## [2026-04-08] Rust 1.94.1 - CVE-2026-33056: symlink attack en Cargo via tar-rs
+
+- **Source**: [Rust Blog - CVE-2026-33056](https://blog.rust-lang.org/2026/03/21/cve-2026-33056/) / [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-33056)
+- **Confidence**: Alta
+- **What changes**: La crate `tar-rs` usada internamente por Cargo seguía symlinks durante extracción de crates, permitiendo a una crate maliciosa hacer `chmod` de directorios arbitrarios fuera del root de extracción. Publicado el 21 de marzo, fix en Rust 1.94.1 (26 marzo 2026) actualizando `tar` a 0.4.45.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a Rust >= 1.94.1. Usuarios de registros alternos (no crates.io) no están protegidos automáticamente con versiones antiguas de Cargo — contactar al vendor del registry. crates.io fue auditado y confirmado limpio.
+
+---
+
+## [2026-04-08] Python 3.13.13 + 3.15.0a8 final alpha (7 abril 2026)
+
+- **Source**: [Python.org - disponibilidad simultánea](https://discuss.python.org/t/python-3-15-0a8-3-14-4-and-3-13-13-are-now-available/106887) / [Python 3.15.0a8](https://www.python.org/downloads/release/python-3150a8/)
+- **Confidence**: Alta
+- **What changes**: Publicados el 7 de abril junto con Python 3.14.4 (ya documentado). (1) **Python 3.13.13**: 13ª release de mantenimiento, ~200 bugfixes desde 3.13.12. (2) **Python 3.15.0a8**: último alpha planificado antes de la beta. Features preview notables: UTF-8 como encoding por defecto en todo (PEP 686, breaking para proyectos legacy con encodings no-UTF-8), JIT compiler con +6-7% speedup en x86-64 y +12-13% en AArch64 (PEP 744), profiler de sampling estadístico (PEP 799), unpacking `*`/`**` en comprehensions (PEP 798).
+- **Action required**: Monitorear
+- **Details**: Python 3.13.13 es actualización de mantenimiento segura. El alpha 3.15 no debe usarse en producción, pero el cambio de encoding UTF-8 por defecto (PEP 686) es un breaking change para proyectos con archivos legacy en Latin-1/CP1252 — comenzar a auditar ahora antes de la release final (~octubre 2026).

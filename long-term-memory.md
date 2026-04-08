@@ -617,3 +617,73 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Publicados el 7 de abril junto con Python 3.14.4 (ya documentado). (1) **Python 3.13.13**: 13ª release de mantenimiento, ~200 bugfixes desde 3.13.12. (2) **Python 3.15.0a8**: último alpha planificado antes de la beta. Features preview notables: UTF-8 como encoding por defecto en todo (PEP 686, breaking para proyectos legacy con encodings no-UTF-8), JIT compiler con +6-7% speedup en x86-64 y +12-13% en AArch64 (PEP 744), profiler de sampling estadístico (PEP 799), unpacking `*`/`**` en comprehensions (PEP 798).
 - **Action required**: Monitorear
 - **Details**: Python 3.13.13 es actualización de mantenimiento segura. El alpha 3.15 no debe usarse en producción, pero el cambio de encoding UTF-8 por defecto (PEP 686) es un breaking change para proyectos con archivos legacy en Latin-1/CP1252 — comenzar a auditar ahora antes de la release final (~octubre 2026).
+
+---
+
+## [2026-04-08] CVE-2025-59528 - Flowise AI: RCE crítico CVSS 10.0, explotación activa desde 7 abril
+
+- **Source**: [BleepingComputer](https://www.bleepingcomputer.com/news/security/max-severity-flowise-rce-vulnerability-now-exploited-in-attacks/) / [The Hacker News](https://thehackernews.com/2026/04/flowise-ai-agent-builder-under-active.html) / [Security Affairs](https://securityaffairs.com/190471/security/attackers-exploit-critical-flowise-flaw-cve-2025-59528-for-remote-code-execution.html)
+- **Confidence**: Alta
+- **What changes**: CVE-2025-59528 (CVSS 10.0, divulgado en septiembre 2025) entró en explotación activa el 7 de abril de 2026, detección confirmada por VulnCheck Canary network. El nodo `CustomMCP` evalúa `mcpServerConfig` como JavaScript crudo sin sanitización, dando acceso completo al runtime de Node.js (incluyendo `child_process` y `fs`). 12.000–15.000 instancias Flowise expuestas en internet. Dos CVEs adicionales (CVE-2025-8943, CVE-2025-26319) también bajo explotación activa.
+- **Action required**: Urgente
+- **Details**: Actualizar a Flowise `>=3.1.1` (mínimo: 3.0.6 donde se aplicó el parche inicial). No existe workaround viable sin actualizar. Buscar instancias accesibles públicamente con `shodan search "flowise"` o similar. Para equipos que usen Flowise en CI/CD o como herramienta interna: tratar cualquier instancia accesible como comprometida hasta verificar la versión.
+
+---
+
+## [2026-04-08] CVE-2026-0621 - @modelcontextprotocol/sdk: ReDoS CVSS 8.7 en UriTemplate
+
+- **Source**: [GitHub Advisory GHSA-8r9q-7v3j-jr4g](https://github.com/advisories/GHSA-8r9q-7v3j-jr4g) / [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-0621) / [GitLab Advisory](https://advisories.gitlab.com/pkg/npm/@modelcontextprotocol/sdk/CVE-2026-0621/)
+- **Confidence**: Alta
+- **What changes**: La función `partToRegExp()` en la clase `UriTemplate` del SDK de MCP genera expresiones regulares con cuantificadores anidados al procesar variables exploded (`{/id*}`, `{?tags*}`), causando backtracking catastrófico. Un atacante envía una URI maliciosa via `resources/read` para causar 100% de CPU y DoS de todos los clientes. Vector de red, sin autenticación ni interacción de usuario.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `@modelcontextprotocol/sdk` a `>=1.25.2` (fix commit b392f02). Afecta cualquier MCP server que acepte requests de clientes no confiables. EPSS 0.023% (sin explotación activa conocida). Revisar si otras librerías de MCP (Python, Java) tienen el mismo patrón.
+
+---
+
+## [2026-04-08] CVE-2026-35515 - @nestjs/core: SSE injection CVSS 7.2, sin autenticación requerida
+
+- **Source**: [GitLab Advisory GHSA-36xv-jgw5-4q75](https://advisories.gitlab.com/pkg/npm/@nestjs/core/CVE-2026-35515/) / [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-35515)
+- **Confidence**: Alta
+- **What changes**: `SseStream._transform()` en `@nestjs/core` interpola directamente `message.type` y `message.id` en el protocolo SSE sin sanitizar caracteres de newline. Vectores de ataque: (1) event spoofing — forzar callbacks incorrectos en `EventSource.addEventListener()`; (2) data injection — inyectar payloads `data:` con XSS si el cliente renderiza SSE como HTML; (3) corrupción de `Last-Event-ID` para manipular reconexiones. Vector de red, sin autenticación, baja complejidad. Publicado el 6-7 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `@nestjs/core` a `>=11.1.18`. El fix (commit 83558ae) añade sanitización de newlines. Afecta cualquier endpoint NestJS que use SSE con datos controlados por el usuario en los campos `type` o `id`.
+
+---
+
+## [2026-04-08] CVE-2026-39406/39407 - Hono: path traversal via double-slash en serveStatic (CVSS 5.3)
+
+- **Source**: [GitLab Advisory CVE-2026-39406](https://advisories.gitlab.com/pkg/npm/@hono/node-server/CVE-2026-39406/) / [GitLab Advisory CVE-2026-39407](https://advisories.gitlab.com/pkg/npm/hono/CVE-2026-39407/)
+- **Confidence**: Alta
+- **What changes**: El middleware `serveStatic` en Hono normaliza paths con doble slash (`//admin/file`) pero el router no los matchea, permitiendo eludir middleware de autorización basado en rutas. Un atacante accede a archivos estáticos "protegidos" con requests como `GET //admin/secret.json`. Ambos CVEs son la misma bug raíz en dos paquetes distintos. Publicados el 8 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `@hono/node-server` a `>=1.19.13` (CVE-2026-39406) y `hono` a `>=4.12.12` (CVE-2026-39407). El fix (commit 025c30f) normaliza los paths antes de pasarlos al router. Afecta únicamente aplicaciones que usen `serveStatic` con protección de autorización basada en path de ruta.
+
+---
+
+## [2026-04-08] CVE-2026-34765 - Electron: window.open() trust bypass CVSS 6.0 (fixed en 39.8.5/40.8.5/41.1.0)
+
+- **Source**: [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-34765) / [GitLab Advisory](https://advisories.gitlab.com/pkg/npm/electron/CVE-2026-34765/)
+- **Confidence**: Alta
+- **What changes**: El lookup de ventanas por nombre (`window.open(url, targetName)`) no está limitado al contexto del opener. Un renderer puede navegar una ventana hijo abierta por otro renderer si comparten el mismo `targetName` y la ventana hijo tiene `webPreferences` elevados (p.ej. `nodeIntegration: true`). CVSS 6.0 (Medium), CWE-668. Solo afecta apps con múltiples ventanas top-level de distintos niveles de confianza. Publicado el 7 de abril de 2026.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar Electron a `39.8.5`, `40.8.5`, `41.1.0`, o `42.0.0-alpha.5`. Mitigación adicional: usar `webPreferences.contextIsolation: true` y `sandbox: true` en todas las ventanas. Si la app usa múltiples top-level windows con trust mixto, auditar el uso de nombres de target en `window.open()`.
+
+---
+
+## [2026-04-08] CVE-2026-23869 - Next.js RSC: DoS CVSS 7.5 (versiones 13.x–16.x), WAF Vercel como mitigación
+
+- **Source**: [Vercel Changelog](https://vercel.com/changelog) / [Vercel Weekly 2026-04-06](https://community.vercel.com/t/vercel-weekly-2026-04-06/37604)
+- **Confidence**: Alta
+- **What changes**: Nueva CVE de Next.js (CVSS 7.5, High) que afecta React Server Components en versiones 13.x hasta 16.x — causa denial of service. Complementa y es distinto de CVE-2026-27979 y CVE-2026-29057 ya documentados en la entrada de Next.js 16.2. Vercel desplegó reglas WAF protectoras el 8 de abril de 2026; las reglas WAF **no son sustituto** del upgrade.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar Next.js a `>=16.2` (que ya incluye los parches anteriores de seguridad). Complementa la entrada del 2026-04-06 sobre Next.js 16.2. Si estás en ramas legacy (14.x, 15.x), verificar los advisory channels de Next.js para patches específicos de esas ramas.
+
+---
+
+## [2026-04-08] VeraCrypt - Microsoft terminó cuenta de firma de drivers Windows sin previo aviso
+
+- **Source**: [SourceForge Discussion (Mounir Idrassi, 30 mar 2026)](https://sourceforge.net/p/veracrypt/discussion/general/thread/9620d7a4b3/) / [404 Media](https://www.404media.co/microsoft-abruptly-terminates-veracrypt-account-halting-windows-updates/) / [Hacker News (958 pts)](https://news.ycombinator.com/item?id=46861008)
+- **Confidence**: Alta
+- **What changes**: El 30 de marzo de 2026, Microsoft terminó sin previo aviso la cuenta de desarrollador de Mounir Idrassi (creador de VeraCrypt) usada para firmar el bootloader y drivers de Windows. Sin resolución, no pueden publicarse nuevas releases de VeraCrypt para Windows firmadas. Linux y macOS no están afectados. La versión existente (1.26.24) sigue funcionando pero el certificado de firma expirará en el futuro.
+- **Action required**: Monitorear
+- **Details**: No es una CVE — no hay vulnerabilidad activa. El riesgo es operativo: equipos que dependan de actualizaciones de VeraCrypt en Windows quedan sin actualizaciones hasta que se resuelva la situación. Un empleado de Microsoft (Rafael Rivera) ofreció ayuda interna. Si VeraCrypt es parte de tu stack de compliance/cifrado en Windows, monitorear el SourceForge thread para resolución.

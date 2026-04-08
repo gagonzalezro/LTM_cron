@@ -347,3 +347,43 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: Anthropic introdujo controles de **data residency** con el nuevo parámetro `inference_geo` en la API. Permite especificar dónde se ejecuta la inferencia del modelo. La opción `US-only` está disponible a 1.1x el precio estándar, aplicable a modelos publicados después del 1 de febrero de 2026.
 - **Action required**: Monitorear
 - **Details**: Relevante para organizaciones con requisitos de compliance de datos (GDPR, HIPAA, contratos que exigen procesamiento en US). Añadir `inference_geo: "us"` en los parámetros de la request para forzar inferencia en US. El surcharge del 10% aplica por request. Complementa las features de abril 2026 documentadas en la entrada anterior.
+
+---
+
+## [2026-04-08] OpenAI - Assistants API sunset agosto 2026 + múltiples deprecaciones
+
+- **Source**: [OpenAI Developer Community - Assistants API deprecation](https://community.openai.com/t/assistants-api-beta-deprecation-august-26-2026-sunset/1354666) / [OpenAI Deprecations oficial](https://developers.openai.com/api/docs/deprecations)
+- **Confidence**: Alta
+- **What changes**: OpenAI anuncia varias deprecaciones críticas con fechas concretas: (1) **Assistants API** — deprecated, sunset **26 agosto 2026**. Migrar a la nueva **Responses API** (soporta multi-step workflows, tool integrations, agentes). (2) **Realtime API Beta** — sunset **7 mayo 2026** (~4 semanas). (3) **DALL-E model snapshots** — sunset **12 mayo 2026** (~5 semanas). (4) **Videos API & Sora 2** — deprecated 24 mar 2026, sunset **24 septiembre 2026**. (5) **GPT-5.2 Thinking** — sunset **5 junio 2026**.
+- **Action required**: Migrate
+- **Details**: Las más urgentes son Realtime API (7 mayo) y DALL-E snapshots (12 mayo) — aproximadamente un mes para migrar. Assistants API tiene mayor margen (agosto) pero es la más impactante por el volumen de integraciones. La Responses API incluye shell tool, agent execution loop, hosted container workspace, context compaction y reusable agent skills. Auditar todas las integraciones OpenAI para identificar las afectadas.
+
+---
+
+## [2026-04-08] React Router v7 - soporte Vite 8 + breaking change en RSC Framework Mode
+
+- **Source**: [React Router CHANGELOG.md oficial](https://reactrouter.com/changelog) / [Releasebot React Router April 2026](https://releasebot.io/updates/remix/react-router)
+- **Confidence**: Alta
+- **What changes**: Release del 2 de abril 2026: (1) **Soporte Vite 8** — flag `future.unstable_viteEnvironmentApi` estabilizado como `future.v8_viteEnvironmentApi` en `react-router.config.ts`. (2) **Breaking change en RSC Framework Mode (unstable)**: proyectos que ya adoptaron el RSC Framework Mode en estado unstable deben actualizar sus route modules para exportar las nuevas anotaciones requeridas. (3) `fetcher.unstable_reset()` estabilizado como `fetcher.reset()`.
+- **Action required**: Monitorear
+- **Details**: El breaking change solo afecta a equipos que adoptaron el RSC Framework Mode *unstable* anticipadamente. Para el resto, la actualización es no-breaking. Migración: cambiar `future.unstable_viteEnvironmentApi` → `future.v8_viteEnvironmentApi` en config; actualizar exports de route modules si se usa RSC mode. El soporte de Vite 8 es necesario para usar las últimas features de Vite.
+
+---
+
+## [2026-04-08] Vercel - Observability Plus sin fee base + nuevos modelos en AI Gateway
+
+- **Source**: [Vercel Changelog](https://vercel.com/changelog) / [Vercel Weekly 2026-04-06](https://community.vercel.com/t/vercel-weekly-2026-04-06/37604)
+- **Confidence**: Alta
+- **What changes**: Dos cambios relevantes en la semana del 6 de abril 2026: (1) **Observability Plus pricing**: eliminado el fee fijo de $10/mes — ahora se paga solo por eventos de observabilidad recolectados (modelo pay-per-use). (2) **Nuevos modelos en Vercel AI Gateway**: `Qwen 3.6 Plus` de Alibaba (1M contexto, capacidades agénticas, mejoras en tool-calling y multilingual) y `Gemma 4 26B` (MoE) + `Gemma 4 31B` (Dense) de Google.
+- **Action required**: Monitorear
+- **Details**: El cambio de Observability Plus puede reducir costos para proyectos con bajo volumen de eventos, pero aumentarlos para proyectos con alto volumen que antes pagaban flat rate. Revisar el uso actual antes de asumir ahorro. Los nuevos modelos en AI Gateway amplían las opciones para workflows AI sin necesidad de manejar múltiples integraciones de proveedores.
+
+---
+
+## [2026-04-08] GitHub Copilot cloud agent - commits firmados + agent firewall (abril 2026)
+
+- **Source**: [GitHub Changelog - April 2026](https://github.blog/changelog/month/04-2026/) / [GitHub Copilot What's New](https://github.com/features/copilot/whats-new)
+- **Confidence**: Alta
+- **What changes**: Complementa la entrada del 2026-04-07 sobre Copilot SDK. Nuevas capacidades del Copilot cloud agent en abril 2026: (1) **Commits firmados**: todos los commits del cloud agent aparecen como **Verified** en GitHub (firmados con clave de Anthropic/GitHub). (2) **Agent firewall integrado**: bloquea acceso a internet del agente para proteger contra prompt injection y data exfiltration. (3) **@copilot en PRs**: mencionar `@copilot` en comentarios de PR instruye al agente a hacer cambios en su propio entorno cloud. (4) **Copilot coding agent management REST API** (public preview): programmatic control de acceso por repo para org owners.
+- **Action required**: Monitorear
+- **Details**: El agent firewall es especialmente relevante para entornos enterprise donde el código puede tener datos sensibles. Evaluar si la restricción de internet del agente impacta workflows que necesiten que Copilot busque documentación externa. Los commits verificados mejoran auditoría en repos con requisitos de compliance.

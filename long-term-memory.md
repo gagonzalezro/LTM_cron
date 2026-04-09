@@ -650,6 +650,56 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 
 ---
 
+## [2026-04-09] CVE-2026-23869 "React2DoS" - DoS en React Server Components via Flight protocol deserialization (CVSS 7.5)
+
+- **Source**: [Vercel Changelog](https://vercel.com/changelog/summary-of-cve-2026-23869) / [Security Boulevard](https://securityboulevard.com/2026/04/react2dos-cve-2026-23869-when-the-flight-protocol-crashes-at-takeoff/) / [Akamai Research](https://www.akamai.com/blog/security-research/cve-2026-23864-react-nextjs-denial-of-service)
+- **Confidence**: Alta
+- **What changes**: Divulgado el 8 de abril de 2026. Una HTTP request maliciosa al endpoint de Server Functions del App Router puede disparar CPU excesiva al deserializar el payload del Flight protocol, causando DoS. Cualquier atacante de red sin autenticación puede interrumpir el servicio. Afecta Next.js 13.x, 14.x, 15.x y 16.x con App Router. Es una vulnerabilidad DoS distinta de CVE-2025-55182 (RCE).
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a Next.js `15.5.15` (rama 15.x) o `16.2.3` (rama 16.x). Vercel desplegó reglas WAF automáticas para proyectos hospedados, pero **no sustituyen al parche**. Apps que no usen el App Router ni Server Functions no están afectadas. Apps en Pages Router están seguras.
+
+---
+
+## [2026-04-09] CVE-2026-34043 - serialize-javascript <7.0.5: CPU exhaustion DoS via array-like objects (CVSS 5.9)
+
+- **Source**: [GitLab Advisory](https://advisories.gitlab.com/pkg/npm/serialize-javascript/CVE-2026-34043/) / [SentinelOne](https://www.sentinelone.com/vulnerability-database/cve-2026-34043/)
+- **Confidence**: Alta
+- **What changes**: Publicado el 27 de marzo de 2026. `serialize-javascript` <7.0.5 entra en bucle de CPU infinita al serializar objetos que heredan de `Array.prototype` con un campo `length` muy grande. Un atacante de red sin autenticación puede causar DoS (100% CPU) si puede enviar input a un endpoint que serialice datos. Es dependencia transitiva de `terser-webpack-plugin` — usada por webpack, react-scripts, Next.js y Vite.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `serialize-javascript` a `>=7.0.5`. Ejecutar `npm audit` para detectar si alguna dependencia transitiva está afectada. El riesgo es mayor en apps que serialicen input de usuarios no confiables con esta librería. CWE-400.
+
+---
+
+## [2026-04-09] CVE-2026-39888/39890/39891 - PraisonAI ≤1.5.114: múltiples RCE críticos (CVSS 9.9 / 9.8)
+
+- **Source**: [GitLab Advisory CVE-2026-39888](https://advisories.gitlab.com/pkg/pypi/praisonaiagents/CVE-2026-39888/) / [TheHackerWire](https://www.thehackerwire.com/critical-praisonai-sandbox-escape-rce-cve-2026-39888/)
+- **Confidence**: Alta
+- **What changes**: Publicados el 8 de abril de 2026. Tres CVEs en el framework de agentes PraisonAI: (1) **CVE-2026-39888** (CVSS 9.9): sandbox escape via frame traversal — el blocklist AST del subprocess omite `__traceback__`, `tb_frame`, `f_back`, `f_builtins`, permitiendo acceso a los builtins reales del host y ejecución arbitraria. (2) **CVE-2026-39890** (CVSS 9.8): RCE via YAML deserialization en la carga de definiciones de agentes. (3) **CVE-2026-39891**: template injection via agent input.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `praisonaiagents` y `praisonai` a `>=1.5.115`. Si se usa PraisonAI para ejecutar código de usuarios no confiables en producción, tratar el entorno como potencialmente comprometido hasta actualizar.
+
+---
+
+## [2026-04-09] CVE-2026-39892 - Python cryptography 45.0.0–46.0.6: buffer overflow en Hash.update() (CVSS 5.3)
+
+- **Source**: [GitLab Advisory](https://advisories.gitlab.com/pkg/pypi/cryptography/CVE-2026-39892/)
+- **Confidence**: Alta
+- **What changes**: Publicado el 8 de abril de 2026. En Python >3.11, pasar buffers no-contiguos (ej. slices inversos como `data[::-1]`) a APIs como `Hash.update()`, `HMAC.update()` y cifrados simétricos puede leer más allá del límite del buffer — DoS o potencial lectura de memoria adyacente. Solo afecta las versiones 45.0.0–46.0.6.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `cryptography` a `>=46.0.7`. El riesgo es bajo para code paths con buffers de orientación estándar. Mayor riesgo en servicios que procesen slices invertidos de datos de red. CWE-119.
+
+---
+
+## [2026-04-09] GlassWorm extiende targeting a npm: react-native packages comprometidos (marzo 2026)
+
+- **Source**: [StepSecurity Blog](https://www.stepsecurity.io/blog/malicious-npm-releases-found-in-popular-react-native-packages---130k-monthly-downloads-compromised) / [Sonatype Blog](https://www.sonatype.com/blog/hijacked-npm-packages-deliver-malware-via-solana-linked-to-glassworm) / [CyberSecurityNews](https://cybersecuritynews.com/glassworm-hits-popular-react-native-packages/)
+- **Confidence**: Alta
+- **What changes**: Extiende la entrada del 2026-04-06 sobre GlassWorm (Open VSX). El 16-18 de marzo de 2026, GlassWorm comprometió cuentas npm y publicó versiones maliciosas de `react-native-country-select@0.3.91` y `react-native-international-phone-number@0.11.8` (más versiones 0.12.1–0.12.3 en días posteriores). Total: 134.887+ descargas mensuales combinadas. Mismo vector Solana blockchain como dead drop C2 que en el ataque Open VSX. Un script `install.js` descarga y ejecuta un payload de segunda etapa.
+- **Action required**: Urgente
+- **Details**: Verificar que ningún proyecto React Native use estas versiones comprometidas. Versiones afectadas: `react-native-country-select@0.3.91`, `react-native-international-phone-number@0.11.8, 0.12.1, 0.12.2, 0.12.3`. Los mantenedores publicaron versiones limpias tras el reporte. GlassWorm es el mismo actor que atacó extensiones Open VSX en enero-marzo 2026 — la campaña se expande activamente.
+
+---
+
 ## [2026-04-08] CVE-2026-39406/39407 - Hono: path traversal via double-slash en serveStatic (CVSS 5.3)
 
 - **Source**: [GitLab Advisory CVE-2026-39406](https://advisories.gitlab.com/pkg/npm/@hono/node-server/CVE-2026-39406/) / [GitLab Advisory CVE-2026-39407](https://advisories.gitlab.com/pkg/npm/hono/CVE-2026-39407/)

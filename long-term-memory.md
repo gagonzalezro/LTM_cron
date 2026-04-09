@@ -687,3 +687,23 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: El 30 de marzo de 2026, Microsoft terminó sin previo aviso la cuenta de desarrollador de Mounir Idrassi (creador de VeraCrypt) usada para firmar el bootloader y drivers de Windows. Sin resolución, no pueden publicarse nuevas releases de VeraCrypt para Windows firmadas. Linux y macOS no están afectados. La versión existente (1.26.24) sigue funcionando pero el certificado de firma expirará en el futuro.
 - **Action required**: Monitorear
 - **Details**: No es una CVE — no hay vulnerabilidad activa. El riesgo es operativo: equipos que dependan de actualizaciones de VeraCrypt en Windows quedan sin actualizaciones hasta que se resuelva la situación. Un empleado de Microsoft (Rafael Rivera) ofreció ayuda interna. Si VeraCrypt es parte de tu stack de compliance/cifrado en Windows, monitorear el SourceForge thread para resolución.
+
+---
+
+## [2026-04-09] Next.js 16 - breaking changes de upgrade: async params obligatorio, middleware→proxy, AMP eliminado
+
+- **Source**: [Next.js 16 Blog](https://nextjs.org/blog/next-16) / [Upgrade Guide v16](https://nextjs.org/docs/app/guides/upgrading/version-16)
+- **Confidence**: Alta
+- **What changes**: Next.js 16 (upgrade desde v15) elimina compatibilidad temporal que v15 mantenía: (1) `params` y `searchParams` en layouts/pages/route handlers son 100% async — el acceso síncrono ya no funciona. (2) `middleware.ts` renombrado a `proxy.ts`; edge runtime **no soportado** en proxy (solo nodejs). (3) `next/link` prop `legacyBehavior` **eliminada**. (4) Soporte AMP **eliminado** completamente — todas las APIs y config AMP removidas. (5) `revalidateTag()` requiere segundo argumento con perfil `cacheLife` — forma single-arg deprecada. (6) React Compiler 1.0 ahora estable vía opción `reactCompiler` (antes bajo `experimental`).
+- **Action required**: Migrar
+- **Details**: El punto más crítico es el cambio async/sync de params: cualquier componente que acceda `params.id` directamente rompe — debe cambiarse a `const { id } = await params`. Usar codemod oficial: `npx @next/codemod@latest upgrade`. El renombrado de middleware a proxy afecta estructura de archivos y cualquier config de CI que referencie `middleware.ts`. Complementa entry 2026-04-06 sobre Next.js 16.2 (performance y CVEs).
+
+---
+
+## [2026-04-09] React Native 0.85 - nuevo Animation Backend por defecto, Jest preset a paquete separado
+
+- **Source**: [React Native 0.85 Release Blog](https://reactnative.dev/blog/2026/04/07/react-native-0.85)
+- **Confidence**: Alta
+- **What changes**: React Native 0.85 (7 abril 2026): (1) Nuevo Animation Backend activo por defecto. (2) Jest preset movido a paquete dedicado `@react-native/jest-preset` — el preset anterior `react-native` falla. (3) `CatalystInstanceImpl` **eliminado** (estaba deprecado). (4) `ReactZIndexedViewGroup` y `UIManagerHelper` deprecados. (5) `AccessibilityInfo.setAccessibilityFocus` deprecado en favor de `AccessibilityInfo.sendAccessibilityEvent`.
+- **Action required**: Monitorear
+- **Details**: Solo relevante para proyectos React Native. El cambio de Jest preset requiere actualizar `jest.config.js`: reemplazar `preset: 'react-native'` por `preset: '@react-native/jest-preset'` e instalar el paquete. El nuevo Animation Backend puede producir diferencias de comportamiento en animaciones existentes — verificar en staging antes de release.

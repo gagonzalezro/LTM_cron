@@ -707,3 +707,43 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: React Native 0.85 (7 abril 2026): (1) Nuevo Animation Backend activo por defecto. (2) Jest preset movido a paquete dedicado `@react-native/jest-preset` — el preset anterior `react-native` falla. (3) `CatalystInstanceImpl` **eliminado** (estaba deprecado). (4) `ReactZIndexedViewGroup` y `UIManagerHelper` deprecados. (5) `AccessibilityInfo.setAccessibilityFocus` deprecado en favor de `AccessibilityInfo.sendAccessibilityEvent`.
 - **Action required**: Monitorear
 - **Details**: Solo relevante para proyectos React Native. El cambio de Jest preset requiere actualizar `jest.config.js`: reemplazar `preset: 'react-native'` por `preset: '@react-native/jest-preset'` e instalar el paquete. El nuevo Animation Backend puede producir diferencias de comportamiento en animaciones existentes — verificar en staging antes de release.
+
+---
+
+## [2026-04-09] Claude Code v2.1.97 - Focus view, permisos Bash endurecidos, fixes de MCP y /resume
+
+- **Source**: [GitHub Releases - anthropics/claude-code v2.1.97](https://github.com/anthropics/claude-code/releases/tag/v2.1.97)
+- **Confidence**: Alta
+- **What changes**: Release del 8 de abril 2026 (~21:52 UTC). Features nuevas: (1) **Focus view** (`Ctrl+O`) en modo `NO_FLICKER` — muestra solo el prompt, un resumen de una línea de la herramienta con diffstats, y la respuesta final. (2) **`refreshInterval`** en status line settings para re-ejecutar el comando N segundos. (3) **`workspace.git_worktree`** en el JSON de entrada del status line (true cuando el directorio es un worktree enlazado). (4) Indicador **`● N running`** en `/agents` junto a tipos de agente con subagentes activos. (5) Syntax highlighting para archivos de política **Cedar** (`.cedar`, `.cedarpolicy`). Fixes críticos: permisos Bash endurecidos (env-var prefixes, network redirects); colisión de nombres de reglas de permiso con propiedades prototype de JavaScript (causaba `settings.json` ignorado en silencio); memory leak de MCP HTTP/SSE de ~50 MB/hr; retries 429 con backoff exponencial (antes agotaban todos los intentos en ~13 segundos); múltiples bugs de `/resume` incluyendo pérdida de caché y mensajes no guardados.
+- **Action required**: Monitorear
+- **Details**: El fix de colisión de nombres en `settings.json` es relevante para cualquiera con reglas de permisos nombradas como `toString`, `constructor`, `hasOwnProperty`, etc. — si settings parecían ignorados, este puede ser el motivo. El fix del leak de MCP (~50 MB/hr) es importante para sesiones largas con servidores MCP que reconectan. Actualizar a v2.1.97. Supercede la entrada anterior de v2.1.94/2.1.96.
+
+---
+
+## [2026-04-09] PraisonAI - cluster de 3 CVEs críticos/altos (CVSS 9.9, 9.8, 8.8), publicados 8 abril
+
+- **Source**: [GitLab Advisory CVE-2026-39888](https://advisories.gitlab.com/pkg/pypi/praisonaiagents/CVE-2026-39888/) / [GitLab Advisory CVE-2026-39890](https://advisories.gitlab.com/pkg/pypi/praisonai/CVE-2026-39890/) / [GitLab Advisory CVE-2026-39891](https://advisories.gitlab.com/pkg/pypi/praisonai/CVE-2026-39891/) / [TheHackerWire](https://www.thehackerwire.com/critical-praisonai-sandbox-escape-rce-cve-2026-39888/)
+- **Confidence**: Alta
+- **What changes**: Tres CVEs publicados el 8 de abril de 2026 en el ecosistema PraisonAI (framework de multi-agentes Python): (1) **CVE-2026-39888** (CVSS 9.9, CRÍTICO) — sandbox escape en `praisonaiagents` via frame traversal. El sandbox de `execute_code()` en modo subprocess no bloquea `__traceback__`, `tb_frame`, `f_back` y `f_builtins`, permitiendo recuperar el dict real de builtins y ejecutar código arbitrario. Afecta `praisonaiagents < 1.5.115`. (2) **CVE-2026-39890** (CVSS 9.8, CRÍTICO) — RCE via YAML deserialization en `praisonai`. El parsing de YAML para definiciones de agente no deshabilita tags peligrosos (`!!js/function`, `!!js/undefined`), permitiendo embed y ejecución de JavaScript al cargar configs. Afecta `praisonai < 4.5.115`. (3) **CVE-2026-39891** (CVSS 8.8, ALTO) — template injection en tool definitions de agentes. Input de usuario no escapado en `agent.start()` es procesado como template expression. Afecta `praisonai < 4.5.115`. Las tres son explotables de forma remota sin autenticación.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `praisonaiagents` a `>=1.5.115` y `praisonai` a `>=4.5.115`. Si PraisonAI está expuesto a inputs no confiables (usuarios externos, uploads de YAML), tratar como urgente. CVE-2026-39888 es especialmente grave para plataformas MLOps que usen el sandbox de ejecución de código de PraisonAI.
+
+---
+
+## [2026-04-09] CVE-2026-39847 - Emmett (Python web framework): path traversal crítico en RSGI handler (CVSS 9.1)
+
+- **Source**: [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-39847) / [GitLab Advisory](https://advisories.gitlab.com/pkg/pypi/emmett/CVE-2026-39847/)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39847 (CVSS 9.1, CWE-22) publicado el 7 de abril de 2026. El RSGI static handler de Emmett para rutas internas `/__emmett__/` no sanitiza secuencias `../`. Un atacante puede leer archivos arbitrarios del servidor usando requests como `GET /__emmett__/../etc/passwd`. Sin autenticación, acceso remoto, baja complejidad.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar Emmett a `>=2.8.1`. Afecta `emmett` 2.5.0 a 2.8.0. Framework Python de nicho pero con exposición crítica si está desplegado en producción. Si no es posible actualizar inmediatamente, bloquear el path `/__emmett__/` en el reverse proxy como mitigación temporal.
+
+---
+
+## [2026-04-09] CVE-2026-39892 - Python `cryptography`: buffer overflow en APIs de buffer (CVSS 5.3)
+
+- **Source**: [GitLab Advisory](https://advisories.gitlab.com/pkg/pypi/cryptography/CVE-2026-39892/) / [Snyk](https://security.snyk.io/package/pip/cryptography)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39892 (CVSS 5.3, Medium) publicado el 8 de abril de 2026. La librería `cryptography` (PyPI) lee más allá del límite del buffer cuando se le pasan buffers no contiguos a APIs que aceptan Python buffers (p.ej. `Hash.update()` con un slice invertido en Python >3.11). Puede causar corrupción de memoria o DoS. Afecta versiones 45.0.0 a 46.0.6.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `cryptography` a `>=46.0.7`. El paquete `cryptography` es una dependencia transitiva de muchos proyectos Python (paramiko, pyOpenSSL, Twisted, requests con TLS, etc.) — ejecutar `pip show cryptography` para verificar la versión instalada. El riesgo es mayor si se procesan inputs no confiables en operaciones criptográficas con buffers.

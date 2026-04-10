@@ -837,3 +837,43 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: CVE-2026-39860 (CVSS 9.0, CRÍTICO) publicado el 8 de abril de 2026. Es una regresión del fix de CVE-2024-27297. Durante el registro de outputs de derivaciones Fixed-Output (FOD), el proceso Nix (corriendo en el host mount namespace) sigue symlinks creados por el builder dentro del build chroot. Cualquier usuario del grupo `allowed-users` (por defecto todos los usuarios del sistema) puede crear un symlink hacia un path arbitrario del filesystem y hacer que el daemon Nix (root) sobreescriba ese archivo con el output de la derivación → **escalada de privilegios a root**. Solo afecta builds sandboxed en Linux; macOS no está afectado.
 - **Action required**: Actualizar dependencia
 - **Details**: Versiones con fix: **2.34.5, 2.33.4, 2.32.7, 2.31.4, 2.30.4, 2.29.3, 2.28.6**. Afecta a cualquier instalación multi-user de Nix en Linux (incluyendo NixOS). Los desarrolladores que usen Nix como gestor de paquetes en entornos de CI/CD compartidos o multi-usuario deben actualizar inmediatamente. Verificar versión con `nix --version`. GHSA: `GHSA-g3g9-5vj6-r3gj`.
+
+---
+
+## [2026-04-10] Vite 8.0 - Rolldown como único bundler (10-30x más rápido), breaking changes de configuración
+
+- **Source**: [Vite 8.0 Blog oficial](https://vite.dev/blog/announcing-vite8) / [Migration Guide Vite 7→8](https://vite.dev/guide/migration) / [Vite Releases](https://vite.dev/releases)
+- **Confidence**: Alta
+- **What changes**: Vite 8.0 (12 marzo 2026) reemplaza el sistema dual esbuild/Rollup con **Rolldown** (bundler Rust, 10-30x más rápido). Breaking changes de configuración: (1) `build.rollupOptions` → **`build.rolldownOptions`**; (2) `worker.rollupOptions` → **`worker.rolldownOptions`**; (3) `optimizeDeps.esbuildOptions` → **`optimizeDeps.rolldownOptions`** (auto-converted temporalmente); (4) `esbuild` config → **`oxc`** config; (5) CSS minification ahora usa **Lightning CSS** por defecto en vez de esbuild; (6) JS minification usa **Oxc Minifier** en vez de esbuild; (7) CJS interop: el `default` import de módulos CJS se maneja de forma consistente (puede romper código que depende del comportamiento previo); (8) `import.meta.hot.accept()` ya no acepta URL — pasar id; (9) `output.manualChunks` en forma de objeto eliminado; (10) Formatos `'system'` y `'amd'` eliminados; (11) Target de browser mínimo aumentado: Chrome/Edge 107→111, Firefox 104→114, Safari 16.0→16.4. Requiere Node.js 20.19+ o 22.12+.
+- **Action required**: Actualizar dependencia
+- **Details**: Casos de rendimiento real: Linear 46s→6s, Beehiiv -64%, Ramp -57%, Mercedes-Benz.io -38% de build time. Migración recomendada para proyectos complejos: primero cambiar a `rolldown-vite` en Vite 7 para aislar issues de Rolldown, luego upgrade a Vite 8. Para la mayoría de proyectos el upgrade es suave gracias a la capa de compatibilidad que auto-convierte configs de esbuild/Rollup. Esto afecta directamente a proyectos React (CRA-reemplazos), Vue, Svelte, SvelteKit y cualquier app que use Vite como bundler. El punto (9) de CJS interop es el más silencioso y peligroso — testear con `legacy.inconsistentCjsInterop: true` para detectar regresiones.
+
+---
+
+## [2026-04-10] GitLab 18.10.3/18.9.5/18.8.9 - patch de seguridad con CVE-2026-5173 (CVSS 8.5) y DoS sin autenticación
+
+- **Source**: [GitLab Patch Release 18.10.3 (oficial)](https://about.gitlab.com/releases/2026/04/08/patch-release-gitlab-18-10-3-released/) / [SecurityOnline](https://securityonline.info/gitlab-security-patch-18-10-3-websocket-graphql-vulnerabilities/) / [CyberPress](https://cyberpress.org/gitlab-fixes-critical-bugs/)
+- **Confidence**: Alta
+- **What changes**: GitLab publicó el 8 de abril de 2026 versiones parcheadas para CE y EE que corrigen **12 CVEs** incluyendo tres de alta severidad: (1) **CVE-2026-5173** (CVSS 8.5, HIGH) — método WebSocket expuesto permite a usuarios autenticados eludir controles de acceso e invocar métodos de servidor no intencionados; afecta versiones 16.9.6–18.10.2. (2) **CVE-2026-1092** (CVSS 7.5, HIGH) — DoS sin autenticación vía payloads JSON malformados en la Terraform state lock API; afecta desde 12.10. (3) **CVE-2025-12664** (CVSS 7.5, HIGH) — DoS sin autenticación vía consultas GraphQL repetidas; afecta desde 13.0. CVEs adicionales de severidad media (4.3-6.5): XSS en analytics dashboard, code injection en reports de calidad, divulgación de email, DoS en APIs de SBOM/CSV.
+- **Action required**: Urgente
+- **Details**: Versiones parcheadas: **18.10.3, 18.9.5, 18.8.9**. GitLab recomienda actualizar inmediatamente todas las instalaciones self-managed. Los CVEs de DoS sin autenticación (CVE-2026-1092 y CVE-2025-12664) son especialmente críticos para instancias expuestas a internet. CVE-2026-5173 requiere autenticación pero permite bypass de RBAC via WebSocket — relevante en entornos multi-tenant o multi-organización.
+
+---
+
+## [2026-04-10] Vercel - Claude Opus 4.6 Fast Mode en AI Gateway + GLM 5.1 + Sandbox CLI + Django zero-config
+
+- **Source**: [Vercel Changelog — Opus 4.6 Fast Mode](https://vercel.com/changelog/opus-4-6-fast-mode-available-on-ai-gateway) / [Vercel Changelog](https://vercel.com/changelog)
+- **Confidence**: Alta
+- **What changes**: Cuatro actualizaciones de Vercel entre el 7-10 de abril de 2026: (1) **Claude Opus 4.6 Fast Mode en AI Gateway** (7 abril) — 2.5x más rápido en output tokens al mismo nivel de inteligencia, precio 6x la tarifa estándar de Opus 4.6. (2) **GLM 5.1 en AI Gateway** (7 abril) — modelo de Z.ai diseñado para tareas autónomas de larga duración. (3) **`vercel sandbox` CLI subcommand** (8 abril) — gestión de Vercel Sandbox desde la CLI sin necesidad del dashboard. (4) **Soporte Django zero-config** (9 abril) — apps Django se reconocen y despliegan automáticamente sin configuración manual de redirects; usa Fluid compute con Active CPU pricing. (5) **Anomaly alert configuration** (10 abril, mismo día) — Observability Plus ahora permite configurar alertas de anomalía con filtros por proyecto, métrica, HTTP status code y ruta; auto-investigación con routing a Slack/email.
+- **Action required**: Monitorear
+- **Details**: El Fast Mode de Opus 4.6 (punto 1) es relevante para workflows de human-in-the-loop donde la velocidad de respuesta importa más que el costo. A 6x el precio standard, evaluar el ROI antes de activar por defecto. El soporte Django (punto 4) expande Vercel más allá del ecosistema JS/Python asíncrono — equipos con backends Django pueden deployar sin configuración adicional. La anomaly alert (punto 5) complementa la entrada anterior sobre Observability Plus pricing.
+
+---
+
+## [2026-04-10] CVE-2026-34486 - Apache Tomcat: bypass de EncryptInterceptor, severidad "Important" (Tomcat 11.0.20)
+
+- **Source**: [Apache Tomcat 11 Security Page](https://tomcat.apache.org/security-11.html) / [TheHackerWire CVE-2026-34486](https://www.thehackerwire.com/vulnerability/CVE-2026-34486/)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-34486 fue divulgado públicamente el 9 de abril de 2026. Es una regresión introducida por el fix de CVE-2026-29146 (padding oracle attack en `EncryptInterceptor`) — el parche fue incompleto y permite eludir `EncryptInterceptor` completamente, exponiendo datos que deberían estar cifrados en tránsito entre nodos del cluster Tomcat. Afecta únicamente **Apache Tomcat 11.0.20** según la página oficial de seguridad (y posiblemente 10.1.53, 9.0.116 según otras fuentes). Severity: **Important** (clasificación Apache). No se ha publicado CVSS score.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a **Tomcat 11.0.21** (lanzado 4 abril 2026), y según fuentes secundarias también a 10.1.54 / 9.0.117. Solo afecta deployments que usen `EncryptInterceptor` para cifrado de sesiones distribuidas (clustering). Si no usas `EncryptInterceptor`, el riesgo es nulo. Verificar con `grep -r "EncryptInterceptor" conf/` en el directorio de Tomcat.

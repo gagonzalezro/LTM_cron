@@ -797,3 +797,43 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: CVE-2026-39892 (CVSS 5.3, Medium) publicado el 8 de abril de 2026. La librería `cryptography` (PyPI) lee más allá del límite del buffer cuando se le pasan buffers no contiguos a APIs que aceptan Python buffers (p.ej. `Hash.update()` con un slice invertido en Python >3.11). Puede causar corrupción de memoria o DoS. Afecta versiones 45.0.0 a 46.0.6.
 - **Action required**: Actualizar dependencia
 - **Details**: Actualizar `cryptography` a `>=46.0.7`. El paquete `cryptography` es una dependencia transitiva de muchos proyectos Python (paramiko, pyOpenSSL, Twisted, requests con TLS, etc.) — ejecutar `pip show cryptography` para verificar la versión instalada. El riesgo es mayor si se procesan inputs no confiables en operaciones criptográficas con buffers.
+
+---
+
+## [2026-04-10] Anthropic Claude Managed Agents - public beta, nuevo producto de infraestructura de agentes
+
+- **Source**: [Claude Blog oficial](https://claude.com/blog/claude-managed-agents) / [Docs: Overview](https://platform.claude.com/docs/en/managed-agents/overview) / [SiliconANGLE](https://siliconangle.com/2026/04/08/anthropic-launches-claude-managed-agents-speed-ai-agent-development/) / [InfoWorld](https://www.infoworld.com/article/4156852/anthropic-rolls-out-claude-managed-agents.html) / [HelpNetSecurity](https://www.helpnetsecurity.com/2026/04/09/claude-managed-agents-bring-execution-and-control-to-ai-agent-workflows/)
+- **Confidence**: Alta
+- **What changes**: Anthropic lanzó el 8 de abril de 2026 **Claude Managed Agents** en public beta — un harness de agentes completamente gestionado como servicio API. Permite correr Claude como agente autónomo sin gestionar infraestructura: sandboxing, checkpointing, credenciales, permisos y tracing end-to-end incluidos. Core concepts: **Agent** (modelo + system prompt + tools + MCP servers + skills), **Environment** (container cloud), **Session** (instancia de agente en ejecución), **Events** (SSE streaming bidireccional). Todos los endpoints requieren header beta `managed-agents-2026-04-01`. Herramientas built-in disponibles via `agent_toolset_20260401`: bash, file ops, web search, code execution. **Precios**: rates estándar de tokens Claude API + **$0.08/session-hora** de runtime activo; primeras 50 horas/día por organización gratuitas; web search: $10/1000 búsquedas. Early adopters: Notion, Rakuten, Sentry, Asana.
+- **Action required**: Monitorear
+- **Details**: Complementa Claude Code (agentic coding) y Claude Cowork (desktop + local files automation) como tercer pilar del ecosistema agéntico de Anthropic. Multi-agent coordination y self-evaluation están aún en research preview con acceso separado. Máximo 20 skills por sesión. El CLI `ant` (ver entrada siguiente) integra nativamente con Managed Agents. Anthropic afirma 10x mejora en tiempo de ship para early adopters. Relevante para cualquier equipo que esté construyendo agentes y quiera eliminar la complejidad de infraestructura.
+
+---
+
+## [2026-04-10] Anthropic ant CLI (`anthropic-cli`) - nuevo CLI oficial para la Claude API
+
+- **Source**: [GitHub: anthropics/anthropic-cli](https://github.com/anthropics/anthropic-cli) / [Releasebot Anthropic](https://releasebot.io/updates/anthropic) / [blockchain.news análisis](https://blockchain.news/ainews/anthropic-launches-claude-managed-agents-build-and-deploy-via-console-claude-code-and-new-cli-2026-analysis)
+- **Confidence**: Alta
+- **What changes**: Anthropic publicó el 8 de abril de 2026 el repositorio oficial `anthropics/anthropic-cli`, un CLI en Go para interactuar con la Claude API. El binario se llama `ant`. Distinto de `claude` (Claude Code CLI) — `ant` es para gestión de recursos API y despliegue de agentes. Instalación: `go install 'github.com/anthropics/anthropic-cli/cmd/ant@latest'` (requiere Go ≥1.22). Capacidades principales: crear/gestionar mensajes y sesiones de Managed Agents, versionar recursos API en YAML (agentes, environments, skills), integración nativa con Claude Code, output en múltiples formatos (json, yaml, jsonl, pretty) y transformación con sintaxis GJSON.
+- **Action required**: Monitorear
+- **Details**: Especialmente útil para equipos que usen Managed Agents en CI/CD — permite definir agentes en YAML y versionarlos en el repo. Complementa el Console y Claude Code como tercera vía de deploy de agentes. El repositorio es nuevo (creado en torno al 8 abril 2026) y está en desarrollo activo. Requiere `ANTHROPIC_API_KEY` configurado.
+
+---
+
+## [2026-04-10] Claude Code v2.1.98 - Vertex AI wizard, Monitor tool, sandboxing en Linux
+
+- **Source**: [claudeupdates.dev/version/2.1.98](https://www.claudeupdates.dev/version/2.1.98) / [claude-world.com](https://claude-world.com/articles/claude-code-2198-release/) / [GitHub Releases anthropics/claude-code](https://github.com/anthropics/claude-code/releases)
+- **Confidence**: Alta
+- **What changes**: Claude Code v2.1.98 (9 abril 2026, 57 cambios totales) añade sobre v2.1.97: (1) **Google Vertex AI setup wizard** — asistente interactivo desde la pantalla de login al seleccionar "3rd-party platform", guía autenticación GCP, proyecto/región, verificación de credenciales y pinning de modelo. (2) **Monitor tool** — permite hacer streaming de eventos desde scripts en background (complementa el Run in Background de v2.1.97). (3) **`CLAUDE_CODE_PERFORCE_MODE`** env var — Edit/Write/NotebookEdit fallan en archivos read-only con hint `p4 edit` en vez de sobreescribir silenciosamente (relevante para equipos con Perforce). (4) **Subprocess sandboxing con PID namespace isolation** en Linux cuando se activa `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`. (5) **`--exclude-dynamic-system-prompt-sections`** flag en print mode — mejora el cache cross-usuario de prompts del sistema.
+- **Action required**: Monitorear
+- **Details**: El Vertex AI wizard supercede la entrada anterior de v2.1.94 que introdujo el wizard para AWS Bedrock — ahora los tres providers principales (Anthropic, Bedrock, Vertex) tienen asistentes interactivos de setup. El Monitor tool es complementario al campo `run_in_background` del Bash tool. El sandboxing con PID namespace isolation es una mejora de seguridad significativa para entornos que ejecuten código no confiable. Actualizar a v2.1.98. Supercede la entrada de v2.1.97.
+
+---
+
+## [2026-04-10] CVE-2026-39860 - Nix: privilege escalation a root via symlink en multi-user installs (CVSS 9.0)
+
+- **Source**: [NixOS Discourse — Security Advisory oficial](https://discourse.nixos.org/t/nix-security-advisory-privilege-escalation-via-symlink-following-during-fod-output-registration/76900) / [TheHackerWire](https://www.thehackerwire.com/nix-arbitrary-file-overwrite-to-root-cve-2026-39860/) / [THREATINT](https://cve.threatint.eu/CVE/CVE-2026-39860)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39860 (CVSS 9.0, CRÍTICO) publicado el 8 de abril de 2026. Es una regresión del fix de CVE-2024-27297. Durante el registro de outputs de derivaciones Fixed-Output (FOD), el proceso Nix (corriendo en el host mount namespace) sigue symlinks creados por el builder dentro del build chroot. Cualquier usuario del grupo `allowed-users` (por defecto todos los usuarios del sistema) puede crear un symlink hacia un path arbitrario del filesystem y hacer que el daemon Nix (root) sobreescriba ese archivo con el output de la derivación → **escalada de privilegios a root**. Solo afecta builds sandboxed en Linux; macOS no está afectado.
+- **Action required**: Actualizar dependencia
+- **Details**: Versiones con fix: **2.34.5, 2.33.4, 2.32.7, 2.31.4, 2.30.4, 2.29.3, 2.28.6**. Afecta a cualquier instalación multi-user de Nix en Linux (incluyendo NixOS). Los desarrolladores que usen Nix como gestor de paquetes en entornos de CI/CD compartidos o multi-usuario deben actualizar inmediatamente. Verificar versión con `nix --version`. GHSA: `GHSA-g3g9-5vj6-r3gj`.

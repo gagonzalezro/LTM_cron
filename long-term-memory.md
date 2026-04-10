@@ -877,3 +877,73 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: CVE-2026-34486 fue divulgado públicamente el 9 de abril de 2026. Es una regresión introducida por el fix de CVE-2026-29146 (padding oracle attack en `EncryptInterceptor`) — el parche fue incompleto y permite eludir `EncryptInterceptor` completamente, exponiendo datos que deberían estar cifrados en tránsito entre nodos del cluster Tomcat. Afecta únicamente **Apache Tomcat 11.0.20** según la página oficial de seguridad (y posiblemente 10.1.53, 9.0.116 según otras fuentes). Severity: **Important** (clasificación Apache). No se ha publicado CVSS score.
 - **Action required**: Actualizar dependencia
 - **Details**: Actualizar a **Tomcat 11.0.21** (lanzado 4 abril 2026), y según fuentes secundarias también a 10.1.54 / 9.0.117. Solo afecta deployments que usen `EncryptInterceptor` para cifrado de sesiones distribuidas (clustering). Si no usas `EncryptInterceptor`, el riesgo es nulo. Verificar con `grep -r "EncryptInterceptor" conf/` en el directorio de Tomcat.
+
+---
+
+## [2026-04-10] CVE-2026-32871 - FastMCP Python: SSRF + path traversal en OpenAPIProvider (CVSS 10.0 CRITICAL)
+
+- **Source**: [GitHub Advisory GHSA-vv7q-7jx5-f767](https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-vv7q-7jx5-f767) / [GitLab Advisory](https://advisories.gitlab.com/pkg/pypi/fastmcp/CVE-2026-32871/)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-32871 (CVSS 10.0, CRITICAL, publicado 31 marzo 2026). El método `_build_url()` del `OpenAPIProvider` de FastMCP sustituye los parámetros de path directamente en la URL sin URL-encoding. Un atacante que controle un parámetro de path (ej. `user_id = "../../admin/secrets"`) puede usar path traversal para escapar del prefijo API y acceder a endpoints internos arbitrarios del backend — con las credenciales de autenticación del MCP provider (SSRF autenticado). Afecta `fastmcp < 3.2.0`.
+- **Action required**: Urgente
+- **Details**: Actualizar `fastmcp` a `>=3.2.0`. El fix aplica `urllib.parse.quote(str(param), safe="")` a todos los valores de parámetros de path. Crítico para cualquier MCP server construido con FastMCP que exponga operaciones OpenAPI con parámetros de path controlados por el usuario. Puede permitir: acceso a endpoints privados no expuestos en el spec OpenAPI, escalada de privilegios via credenciales heredadas, exfiltración de datos, y movimiento lateral dentro de redes internas.
+
+---
+
+## [2026-04-10] CVE-2026-39885 - mcp-from-openapi: SSRF + local file read via $ref dereferencing (CVSS 7.5 HIGH)
+
+- **Source**: [GitLab Advisory](https://advisories.gitlab.com/pkg/npm/mcp-from-openapi/CVE-2026-39885/) / [CVEReports](https://cvereports.com/reports/CVE-2026-39885)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39885 (CVSS 7.5, HIGH, publicado 8-9 abril 2026). `mcp-from-openapi` usa `@apidevtools/json-schema-ref-parser` para dereferencias `$ref` en specs OpenAPI sin configurar restricciones de URL ni resolvers custom. Una spec OpenAPI maliciosa con `$ref` apuntando a direcciones de red interna, endpoints de metadata cloud (ej. `http://169.254.169.254/latest/meta-data/`), o archivos locales (`file:///etc/passwd`) hace que la librería los fetche durante `initialize()`. Vector: red, sin autenticación, sin interacción de usuario. Afecta `mcp-from-openapi < 2.3.0` / `@frontmcp/sdk < 1.0.4`.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `@frontmcp/sdk` a `>=1.0.4` (que incluye `mcp-from-openapi >= 2.3.0`). El fix impone un blocklist de URLs por defecto. Especialmente crítico para aplicaciones que procesen specs OpenAPI de fuentes no confiables (usuarios externos, uploads de specs). La vulnerabilidad permite robo de credenciales cloud via IMDS (AWS/GCP/Azure) y lectura arbitraria de archivos del sistema.
+
+---
+
+## [2026-04-10] fast-jwt: cluster de 3 CVEs en JWT verification (CVSS 9.1 / 5.3 / 4.2), publicados 3-9 abril
+
+- **Source**: [GitLab CVE-2026-35039](https://advisories.gitlab.com/pkg/npm/fast-jwt/CVE-2026-35039/) / [GitLab CVE-2026-35040](https://advisories.gitlab.com/pkg/npm/fast-jwt/CVE-2026-35040/) / [GitLab CVE-2026-35041](https://advisories.gitlab.com/pkg/npm/fast-jwt/CVE-2026-35041/) / [CVEReports](https://cvereports.com/reports/CVE-2026-35041)
+- **Confidence**: Alta
+- **What changes**: Tres CVEs en `fast-jwt` publicados entre el 3 y 9 de abril de 2026: (1) **CVE-2026-35039** (CVSS 9.1, CRÍTICO, 3 abr): cache key builder collision — si el `cacheKeyBuilder` configurable produce la misma clave para tokens distintos, el verificador puede retornar los claims de un token incorrecto, causando **identity/authorization mixup**. Afecta versiones 0.0.1–6.1.x, fix en `6.2.0`. (2) **CVE-2026-35040** (CVSS 5.3, 9 abr): uso de RegExp con flag `/g` o `/y` en opciones de validación (`allowedAud`, `allowedIss`, etc.) produce validación no-determinista — 50% de requests válidos fallan alternadamente (logical DoS). Afecta `< 6.2.1`. (3) **CVE-2026-35041** (CVSS 4.2, 9 abr): ReDoS — RegExp con cuantificadores anidados (ej. `/(a+)+X$/`) en opciones `allowed*` permite a un atacante con token válido causar 100% CPU. Afecta versiones 5.0.0–6.2.0, fix en `6.2.1`.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `fast-jwt` a `>=6.2.1` para recibir todos los fixes. CVE-2026-35039 es el más crítico: en sistemas que hayan customizado `cacheKeyBuilder` con una función que produzca colisiones, usuarios pueden recibir claims de otros usuarios (escalada horizontal). CVEs 35040 y 35041 solo son explotables cuando se usan RegExp objects (no strings) en opciones de validación. También existe **CVE-2026-35042** (acepta extensiones `crit` desconocidas en violación de RFC 7515) — actualizar al mismo tiempo.
+
+---
+
+## [2026-04-10] CVE-2026-39865 - Axios HTTP/2: DoS por state corruption en session cleanup (CVSS 5.9)
+
+- **Source**: [GitLab Advisory](https://advisories.gitlab.com/pkg/npm/axios/CVE-2026-39865/) / [CVEReports](https://cvereports.com/reports/CVE-2026-39865) / [Tenable](https://www.tenable.com/cve/CVE-2026-39865)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39865 (CVSS 5.9, MEDIUM, publicado 8 abril 2026). **Distinto del ataque a la supply chain de Axios (UNC1069)**. El método `Http2Sessions.getSession()` en `lib/adapters/http.js` itera hacia atrás un array mientras lo muta, causando state corruption cuando un servidor HTTP/2 malicioso cierra múltiples sesiones de forma concurrente. Causa crash del proceso Node.js del cliente. Solo afecta a requests que usan el adapter HTTP/2 (no el HTTP/1.1 default). Afecta `axios < 1.13.2`.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `axios` a `>=1.13.2`. El vector requiere que el atacante controle el servidor HTTP/2 al que el cliente Axios se conecta, o sea un MitM capaz de inyectar frames de control HTTP/2. No permite RCE ni acceso a datos — solo DoS. Riesgo real para microservicios que hagan requests entre sí con HTTP/2 en entornos donde un servicio comprometido pueda crashear clientes.
+
+---
+
+## [2026-04-10] "Tunnel Vision" - ataque a cadena de suministro via kube-health-tools (npm + PyPI), targeting Kubernetes
+
+- **Source**: [Panther Security Blog](https://panther.com/blog/tunnel-vision-supply-chain-attack-targets-kubernetes-via-npm-and-pypi)
+- **Confidence**: Alta
+- **What changes**: Campaña activa desde el 1 de abril de 2026. El paquete `kube-health-tools` fue publicado en npm (5 versiones: 1.0.0, 1.0.1, 1.0.3, 2.0.0, 2.1.0) y PyPI (v1.0.9) desde la cuenta `hhsw2015`. El payload es una cadena de 4 etapas: (1) postinstall ejecuta un nativo addon/script, (2) decode XOR + ejecución de shell script, (3) descarga un binario Go desde github.com/gibunxi4201/kube-node-diag, (4) establece un **reverse tunnel TLS 1.3** a `sync[.]geeker[.]indevs[.]in:443` con acceso SOCKS5 + SSH, persistiendo como `node-health-check`. Objetivo: kubeconfig files, AWS keys, GCP service account JSON, Azure tokens y CI/CD secrets en workstations de desarrolladores.
+- **Action required**: Urgente
+- **Details**: IOCs: proceso `node-health-check` fuera de DaemonSets legítimos, archivo `/tmp/.nhc.enc`, C2 `sync[.]geeker[.]indevs[.]in`. Acciones: bloquear DNS del C2 en egress, buscar el proceso y archivo en todos los hosts de desarrollo y CI/CD, revisar `package-lock.json` y `pip freeze` por esas versiones, rotar kubeconfig + cloud creds + SSH keys + CI/CD secrets si se detecta compromiso. Los paquetes fueron removidos de npm y PyPI.
+
+---
+
+## [2026-04-10] UNC1069/Contagious Interview - campaña expandida a 1700+ paquetes en 5 ecosistemas (Go, Rust, PHP)
+
+- **Source**: [The Hacker News (8 abr 2026)](https://thehackernews.com/2026/04/n-korean-hackers-spread-1700-malicious.html) / [Socket.dev Blog](https://socket.dev/blog/contagious-interview-campaign-spreads-across-5-ecosystems)
+- **Confidence**: Alta
+- **What changes**: Extiende las entradas de 2026-04-06 y 2026-04-08 sobre UNC1069/Sapphire Sleet/BlueNoroff. Reporte de Socket.dev del 8 de abril confirma que la misma campaña "Contagious Interview" lleva activa desde enero 2025 y ha publicado **1700+ paquetes maliciosos** en **5 ecosistemas**: npm, PyPI, **Go Modules** (nuevo), **crates.io/Rust** (nuevo) y **Packagist/PHP** (nuevo). Mismo actor UNC1069, misma infraestructura de staging. Paquetes identificados en este batch: npm: `dev-log-core`, `logger-base`, `logkitx`, `pino-debugger`, `debug-fmt`, `debug-glitz`; PyPI: `logutilkit`, `apachelicense`, `fluxhttp`, `license-utils-kit`. Payload: loaders que descargan RAT/infostealer de segunda etapa con keystroke logging, robo de browser data, despliegue de AnyDesk.
+- **Action required**: Urgente
+- **Details**: El alcance es mucho mayor de lo documentado previamente. Si el stack incluye Go, Rust o PHP, auditar también esas dependencias. Security Alliance (SEAL) bloqueó 164 dominios UNC1069 entre el 6 de febrero y 7 de abril de 2026. El código malicioso se inyecta en funciones legítimas (no en postinstall) para retrasar detección. Vector de ingeniería social: reclutadores falsos en LinkedIn/Telegram/Slack, entrevistas técnicas con "challenges" que incluyen los paquetes maliciosos.
+
+---
+
+## [2026-04-10] hermes-px - paquete PyPI malicioso: proxy AI falso que roba prompts con system prompt robado de Claude Code
+
+- **Source**: [JFrog Security Research (5 abr 2026)](https://research.jfrog.com/post/hermes-px-pypi/) / [CybersecurityNews](https://cybersecuritynews.com/trojanized-pypi-ai-proxy-uses-stolen-claude-prompt/) / [SC Media](https://www.scworld.com/brief/malicious-pypi-package-enables-claude-prompt-data-compromise)
+- **Confidence**: Alta
+- **What changes**: JFrog identificó el 5 de abril de 2026 el paquete `hermes-px` en PyPI, que se presentaba como un "Secure AI Inference Proxy" que enrutaba requests via Tor. En realidad: (1) interceptaba todas las conversaciones del usuario y las exfiltraba a una base de datos Supabase controlada por el atacante (bypassing Tor, exponiendo la IP real), (2) redirigía los requests a un endpoint privado de universidad tunecina, (3) el archivo `base_prompt.pz` contenía un system prompt de **246.000 caracteres** que resultó ser una copia casi completa del system prompt interno de Claude Code de Anthropic — con marcadores internos que sugieren fue extraído de un deployment de finales de 2025 o principios de 2026. Las cadenas sensibles (credenciales Supabase, URLs) estaban protegidas con triple capa de cifrado para evadir scanners estáticos.
+- **Action required**: Urgente
+- **Details**: Verificar que `hermes-px` no esté instalado en ningún entorno. El paquete ya fue eliminado de PyPI. IOC: base de datos Supabase con modelos nombrados `OLYMPUS-1`, `AXIOM-1`, `hermes-v1`. Si el paquete fue instalado, rotar todos los API keys usados en prompts enviados durante el período de uso. La presencia de un system prompt completo de Claude Code en el paquete confirma que actores maliciosos tienen acceso a prompts internos no divulgados — posiblemente relacionado con la filtración de source maps de 2026-04-06.

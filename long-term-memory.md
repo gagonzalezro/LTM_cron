@@ -1007,3 +1007,23 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: CVE-2026-1340 (CVSS 9.8, CRÍTICO) fue añadido al CISA KEV catalog el 9-10 de abril de 2026, con **deadline de mitigación para agencias federales: 11 de abril de 2026 (hoy)**. Complementa CVE-2026-1281 (añadido a KEV en enero). Ambos afectan Ivanti Endpoint Manager Mobile (EPMM) on-premises ≤12.7.x. El vector es HTTP GET a endpoints `/mifs/c/aftstore/fob/` — unsafe bash `$()` arithmetic expansion sin sanitización de input permite command injection → RCE sin autenticación ni interacción de usuario. Unit 42 observó explotación masiva y automatizada. Afecta infraestructura MDM que gestiona dispositivos móviles corporativos (configuraciones, VPN, email, apps).
 - **Action required**: Urgente
 - **Details**: Aplicar RPM 12.x.0.x o RPM 12.x.1.x según la versión instalada. Solo afecta instalaciones Ivanti EPMM on-premises — Ivanti Cloud no está afectado. En entornos de desarrollo que usen MDM corporativo gestionado con EPMM: rotar credenciales corporativas, VPN y email si el servidor EPMM no está parcheado, ya que el servidor puede haber sido comprometido y tiene acceso a todos los dispositivos gestionados.
+
+---
+
+## [2026-04-11] CVE-2026-39363 - Vite Dev Server: arbitrary file read via WebSocket fetchModule (CVSS 8.2)
+
+- **Source**: [GitHub Advisory GHSA-p9ff-h696-f583](https://github.com/vitejs/vite/security/advisories/GHSA-p9ff-h696-f583) / [CIRCL Vulnerability Lookup](https://vulnerability.circl.lu/vuln/ghsa-p9ff-h696-f583)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39363 (CVSS 8.2, HIGH, CWE-22) publicado el 7 de abril de 2026. El método `fetchModule` expuesto via el WebSocket del Vite dev server (`vite:invoke` custom event) no aplica las restricciones del `server.fs` config. Un atacante que pueda conectarse al WebSocket sin header `Origin` puede usar `file://...?raw` o `file://...?inline` para leer archivos arbitrarios del host del servidor. Vector de red, sin autenticación. Afecta Vite 6.0.0–6.4.1, 7.0.0–7.3.1, 8.0.0–8.0.4. PoC disponible; sin explotación activa confirmada.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar a Vite **6.4.2**, **7.3.2** o **8.0.5** según la rama. La vulnerabilidad solo afecta cuando el dev server está **expuesto a la red** (`--host` flag o `server.host` en config) y el WebSocket no está desactivado (`server.ws: false`). Entornos de desarrollo locales (localhost only) no están afectados. Relevante para: servidores de dev compartidos, CI/CD pipelines que ejecuten `vite dev` con `--host`, Docker containers con Vite expuesto en red interna. GHSA: `GHSA-p9ff-h696-f583`.
+
+---
+
+## [2026-04-11] CVE-2026-5724 - Temporal Server: autenticación ausente en streaming gRPC AdminService (CVSS 6.3)
+
+- **Source**: [CIRCL Vulnerability Lookup](https://vulnerability.circl.lu/vuln/cve-2026-5724) / [GitHub Advisory GHSA-q98v-9f9w-f49q](https://github.com/temporalio/temporal/security)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-5724 (CVSS 6.3, MEDIUM, CWE-306) publicado el 10 de abril de 2026. El interceptor chain del servidor gRPC frontend de Temporal omite el interceptor de autorización para endpoints de streaming. El endpoint `AdminService/StreamWorkflowReplicationMessages` acepta requests sin credenciales, a diferencia de los endpoints unary que sí aplican autenticación. Un atacante con acceso de red al puerto frontend de Temporal y conocimiento de la configuración del cluster puede exfiltrar datos de replicación de workflows. Solo afecta Temporal Server self-hosted (Temporal Cloud no está afectado). Afecta versiones 1.24.0–1.30.3.
+- **Action required**: Monitorear
+- **Details**: Actualizar Temporal Server a **v1.28.4**, **v1.29.6**, o **v1.30.4** según la rama. El riesgo real requiere: (1) acceso de red al puerto gRPC frontend (7233 por defecto) desde redes no confiables, y (2) conocimiento del cluster ID y peers. Equipos que expongan el puerto 7233 públicamente o en redes internas amplias sin mTLS/firewall deben priorizar el upgrade. Temporal Cloud no está afectado. GHSA: `GHSA-q98v-9f9w-f49q`.

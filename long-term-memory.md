@@ -947,3 +947,43 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: JFrog identificó el 5 de abril de 2026 el paquete `hermes-px` en PyPI, que se presentaba como un "Secure AI Inference Proxy" que enrutaba requests via Tor. En realidad: (1) interceptaba todas las conversaciones del usuario y las exfiltraba a una base de datos Supabase controlada por el atacante (bypassing Tor, exponiendo la IP real), (2) redirigía los requests a un endpoint privado de universidad tunecina, (3) el archivo `base_prompt.pz` contenía un system prompt de **246.000 caracteres** que resultó ser una copia casi completa del system prompt interno de Claude Code de Anthropic — con marcadores internos que sugieren fue extraído de un deployment de finales de 2025 o principios de 2026. Las cadenas sensibles (credenciales Supabase, URLs) estaban protegidas con triple capa de cifrado para evadir scanners estáticos.
 - **Action required**: Urgente
 - **Details**: Verificar que `hermes-px` no esté instalado en ningún entorno. El paquete ya fue eliminado de PyPI. IOC: base de datos Supabase con modelos nombrados `OLYMPUS-1`, `AXIOM-1`, `hermes-v1`. Si el paquete fue instalado, rotar todos los API keys usados en prompts enviados durante el período de uso. La presencia de un system prompt completo de Claude Code en el paquete confirma que actores maliciosos tienen acceso a prompts internos no divulgados — posiblemente relacionado con la filtración de source maps de 2026-04-06.
+
+---
+
+## [2026-04-11] CVE-2026-40175 - Axios "Gadget Chain": Prototype Pollution → RCE / Full Cloud Compromise (CVSS 10.0)
+
+- **Source**: [TheHackerWire CVE-2026-40175](https://www.thehackerwire.com/vulnerability/CVE-2026-40175/) / [Snyk axios](https://security.snyk.io/package/npm/axios) / [CVEDetails Axios](https://www.cvedetails.com/product/54129/Axios-Axios.html?vendor_id=19831)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-40175 (CVSS 10.0, divulgado ~10 abril 2026) es una vulnerabilidad **distinta e independiente** del ataque a la supply chain (UNC1069, ya en archivo) y del DoS HTTP/2 (CVE-2026-39865, ya en archivo). En versiones `axios < 1.15.0`, el método `toJSON()` del objeto de configuración actúa como **gadget**: permite que cualquier Prototype Pollution en **cualquier dependencia del stack** (no necesariamente Axios) sea escalada a RCE completo o a Full Cloud Compromise via bypass de AWS IMDSv2. El atacante no necesita controlar directamente Axios — basta con explotar prototype pollution en cualquier otra librería del proyecto.
+- **Action required**: Actualizar dependencia
+- **Details**: Actualizar `axios` a `>=1.15.0`. El fix elimina el gadget `toJSON()` que era el vector de escalación de la cadena. Especialmente crítico en entornos cloud donde AWS IMDSv2 es accesible desde el proceso Node.js — permite robo de credenciales IAM. **Nota**: si ya actualizaste a `1.13.x` para CVE-2026-39865 (DoS HTTP/2), debes actualizar **también** a `1.15.0` para este CVE.
+
+---
+
+## [2026-04-11] CVE-2026-39987 - Marimo Python Notebook: Pre-Auth RCE via WebSocket, explotación activa (CVSS 9.3)
+
+- **Source**: [The Hacker News](https://thehackernews.com/2026/04/marimo-rce-flaw-cve-2026-39987.html) / [Endor Labs](https://www.endorlabs.com/learn/root-in-one-request-marimos-critical-pre-auth-rce-cve-2026-39987) / [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-39987) / [GitLab Advisory GHSA-2679-6MX9-H9XC](https://advisories.gitlab.com/pkg/pypi/marimo/GHSA-2679-6mx9-h9xc/) / [Vulert](https://vulert.com/blog/marimo-rce-flaw-cve-2026-39987-exploited/)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-39987 (CVSS 9.3, publicado ~9-10 abril 2026) afecta Marimo, el notebook Python interactivo moderno alternativo a Jupyter. El endpoint WebSocket `/terminal/ws` omite completamente la validación de autenticación (a diferencia de otros endpoints WebSocket del mismo servidor que sí llaman `validate_auth()`), permitiendo que cualquier atacante de red obtenga un PTY shell completo con los privilegios del proceso Marimo — sin credenciales. Explotación activa confirmada: primer ataque en campo a los **9 horas y 41 minutos** tras la divulgación, registrado por Sysdig en honeypots. Añadido a CISA KEV; deadline CISA para agencias federales: **11 de abril de 2026**. Afecta todas las versiones `marimo <= 0.20.4`.
+- **Action required**: Urgente
+- **Details**: Actualizar `marimo` a `>=0.23.0`. Si Marimo está expuesto en red (sin VPN, servidor compartido, Jupyter Hub), tratar como potencialmente comprometido hasta aplicar el parche. La vulnerabilidad requiere solo un cliente WebSocket estándar — ningún otro prerrequisito. GHSA: `GHSA-2679-6MX9-H9XC`.
+
+---
+
+## [2026-04-11] GitHub Copilot VS Code (marzo 2026) - Autopilot autónomo, subagentes anidados, video/imagen en chat
+
+- **Source**: [GitHub Changelog - GitHub Copilot in Visual Studio Code, March Releases (8 abr 2026)](https://github.blog/changelog/2026-04-08-github-copilot-in-visual-studio-code-march-releases/)
+- **Confidence**: Alta
+- **What changes**: El changelog oficial de GitHub del 8 de abril 2026 (distinto de los changelogs ya documentados sobre SDK, privacidad, CLI BYOK y cloud agent) publica los releases de VS Code de marzo. Cuatro adiciones no cubiertas en entradas anteriores: (1) **Autopilot** (public preview) — los agentes aprueban sus propias acciones, reintentan errores automáticamente y completan tareas sin intervención manual (`chat.autopilot.enabled`). (2) **Subagentes anidados** (`chat.subagents.allowInvocationsFromSubagents`) — subagentes pueden invocar otros subagentes para workflows multi-paso complejos. (3) **Imágenes y video en chat** — adjuntar screenshots/videos a mensajes; los agentes retornan grabaciones/imágenes de los cambios con visor tipo carrusel con zoom/pan. (4) **Editor unificado de customizaciones de chat** — instrucciones, agentes custom, skills y plugins desde un único panel; browsing del marketplace MCP integrado.
+- **Action required**: Monitorear
+- **Details**: Autopilot es el cambio más relevante: elimina la fricción de aprobación manual en sesiones largas, habilitando tareas completamente desatendidas en VS Code. Los subagentes anidados son el complemento VS Code de las Agents Window de Cursor 3.0 y los Managed Agents de Anthropic — indica convergencia del ecosistema hacia multi-agente. Esta entrada complementa las entradas de Copilot del 2026-04-07 y 2026-04-08.
+
+---
+
+## [2026-04-11] Microsoft MAI-Transcribe-1, MAI-Voice-1, MAI-Image-2 - modelos propios en Foundry (2 abril 2026)
+
+- **Source**: [Microsoft AI oficial](https://microsoft.ai/news/today-were-announcing-3-new-world-class-mai-models-available-in-foundry/) / [TechCrunch](https://techcrunch.com/2026/04/02/microsoft-takes-on-ai-rivals-with-three-new-foundational-models/) / [VentureBeat](https://venturebeat.com/technology/microsoft-launches-3-new-ai-models-in-direct-shot-at-openai-and-google) / [Microsoft Tech Community](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/introducing-mai-transcribe-1-mai-voice-1-and-mai-image-2-in-microsoft-foundry/4507787)
+- **Confidence**: Alta
+- **What changes**: Microsoft lanzó el 2 de abril de 2026 tres modelos de producción desarrollados internamente (no de OpenAI/Anthropic), disponibles en Microsoft Foundry y el nuevo MAI Playground (solo US por ahora): (1) **MAI-Transcribe-1** — STT para 25 idiomas a ~50% menor costo GPU que competidores; 2.5x más rápido en batch transcription vs. el Azure Fast offering. Compite directamente con Whisper y Cohere Transcribe. (2) **MAI-Voice-1** — TTS que genera 60 segundos de audio en <1 segundo en un solo GPU; voice cloning con pocos segundos de audio. Compite con Voxtral de Mistral. (3) **MAI-Image-2** — generación de imagen, #3 en Arena.ai leaderboard, 2x más rápido que la generación previa de Microsoft. Precios: $0.36/hr (Transcribe), $22/M chars (Voice), $5/M tokens input + $33/M tokens image output (Image-2).
+- **Action required**: Monitorear
+- **Details**: Primera señal concreta de que Microsoft reduce dependencia de OpenAI desarrollando modelos propios de producción. Para equipos en el ecosistema Azure/Microsoft Foundry: estos modelos eliminan la necesidad de APIs de terceros para STT/TTS/imagen. MAI-Transcribe-1 es relevante como alternativa a Whisper con menor costo GPU; compite con Cohere Transcribe (Apache 2.0, ya en el archivo) aunque MAI no es open-weight.

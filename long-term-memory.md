@@ -900,6 +900,46 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 
 ---
 
+## [2026-04-09] Anthropic Advisor Tool - patrón executor+advisor GA en public beta
+
+- **Source**: [Anthropic API Release Notes (oficial)](https://platform.claude.com/docs/en/release-notes/overview) / [Claude Blog - The Advisor Strategy](https://claude.com/blog/the-advisor-strategy)
+- **Confidence**: Alta
+- **What changes**: Anthropic lanzó el 9 de abril 2026 el **advisor tool** en public beta. Permite que un modelo executor rápido y barato (Sonnet 4.6 o Haiku 4.5) consulte a Opus 4.6 como advisor mid-task dentro de **una única llamada a `/v1/messages`**, sin round-trips adicionales. El advisor accede al contexto compartido, devuelve un plan o corrección, y el executor reanuda. Beta header requerido: `anthropic-beta: advisor-tool-2026-03-01`. Tipo de tool en la API: `advisor_20260301`. Benchmarks confirmados: Sonnet+Opus advisor: 74.8% vs 72.1% en SWE-bench Multilingual (+2.7pp), -11.9% coste. Haiku+Opus advisor: 41.2% vs 19.7% en BrowseComp (+21.5pp), **85% más barato que Sonnet solo**.
+- **Action required**: Monitorear
+- **Details**: Usar `max_uses` para limitar el número de invocaciones al advisor y controlar el coste (los tokens del advisor se facturan a tarifas de Opus, los del executor a tarifas del modelo executor). El patrón es especialmente efectivo en flujos agenticos de larga duración donde la mayoría de pasos son rutinarios pero ocasionalmente se requiere razonamiento profundo. Implementación: añadir la tool `advisor_20260301` a la lista de tools en la request y el modelo la invocará automáticamente cuando lo necesite.
+
+---
+
+## [2026-04-10] Claude Code v2.1.101 - /team-onboarding, OS CA cert store, fix command injection en `which`
+
+- **Source**: [GitHub Releases anthropics/claude-code v2.1.101](https://github.com/anthropics/claude-code/releases/tag/v2.1.101)
+- **Confidence**: Alta
+- **What changes**: Claude Code v2.1.101 (10 abril 2026, ~19:03 UTC). Features: (1) **`/team-onboarding`** — genera una guía de ramp-up para nuevos compañeros basada en el uso local de Claude Code (historial, patterns, setup). (2) **OS CA certificate store trust por defecto** — proxies TLS corporativos funcionan automáticamente; para usar solo CAs del bundle de Anthropic: `CLAUDE_CODE_CERT_STORE=bundled`. (3) `/ultraplan` y remote-session auto-crean entornos cloud por defecto. (4) Improved brief mode retry para respuestas plain-text. Fixes críticos: (5) **command injection vulnerability en fallback POSIX `which`** — fix de seguridad para detection de comandos en sistemas sin `which` en PATH estándar. (6) Memory leak en sesiones largas con copias de mensajes históricos. (7) Múltiples bugs de `/resume` picker y edición de archivos. Supercede entrada de v2.1.98.
+- **Action required**: Monitorear
+- **Details**: El fix de command injection en `which` (punto 5) es relevante para sistemas Linux/macOS con configuraciones de PATH no estándar. El trust del OS CA store (punto 2) elimina la necesidad de configuración manual de certificados en entornos corporativos con TLS inspection. Actualizar a v2.1.101.
+
+---
+
+## [2026-04-12] CVE-2026-34621 - Adobe Acrobat/Reader: zero-day activo (CVSS 8.6), explotado desde diciembre 2025
+
+- **Source**: [The Hacker News - Adobe patches actively exploited Acrobat Reader flaw](https://thehackernews.com/2026/04/adobe-patches-actively-exploited.html) / [Adobe Security Bulletin APSB26-34](https://helpx.adobe.com/security/products/acrobat/apsb26-26.html)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-34621 (CVSS 8.6, revisado desde 9.6) — **prototype pollution** en la capa JavaScript de Adobe Acrobat/Reader que resulta en **arbitrary code execution**. Parche publicado el 12 de abril de 2026 como actualización de emergencia. Explotación activa confirmada; evidencia de explotación desde **diciembre de 2025** (~4 meses antes del parche). Vector de ataque: local, requiere interacción del usuario (abrir un PDF malicioso). Afecta: Acrobat DC / Reader DC `≤26.001.21367`, Acrobat 2024 `≤24.001.30356` (Win) / `≤24.001.30360` (Mac).
+- **Action required**: Urgente
+- **Details**: Versiones parcheadas: Acrobat DC / Reader DC → `26.001.21411`; Acrobat 2024 → `24.001.30362` (Win) / `24.001.30360` (Mac). Actualizar inmediatamente via Help > Check for Updates. El ataque funciona mediante PDFs maliciosos que ejecutan JavaScript para envenenar el prototype del runtime de Acrobat. PDFs recibidos por email, Slack, o descargados de sitios no confiables son el vector principal. No afecta navegadores con PDF viewer propio (Chrome, Firefox, Edge) — solo la app de escritorio de Adobe Reader/Acrobat.
+
+---
+
+## [2026-04-06] OpenAI ChatGPT 5.5 + Super App desktop: unificación de ChatGPT, Codex y Atlas browser
+
+- **Source**: [MacRumors - OpenAI Super App](https://www.macrumors.com/2026/03/20/openai-super-app-in-development-chatgpt/) / [The Decoder - OpenAI superapp](https://the-decoder.com/openai-plans-to-merge-chatgpt-codex-and-atlas-browser-into-a-single-desktop-superapp/) / [Neowin](https://www.neowin.net/news/openai-to-merge-atlas-browser-chatgpt-and-codex-into-a-single-desktop-super-app/)
+- **Confidence**: Media
+- **What changes**: OpenAI lanzó el 6 de abril de 2026 **ChatGPT 5.5** y una **Super App desktop unificada** que fusiona ChatGPT, Codex (agente de coding, reescrito en Rust) y Atlas (browser AI-powered) en un único cliente nativo. ChatGPT 5.5 es un update del modelo centrado en memory management, task continuity e instruction-following — bridge hacia GPT-6 "Spud" (aún en entrenamiento). El 9 de abril se incorporó **GPT-5.3 Instant Mini** como nuevo modelo fallback en ChatGPT (reemplaza GPT-5 Instant Mini, más natural y con mejor escritura). OpenAI también introdujo un nuevo tier de $100/mes/seat Pro (hasta 10x más Codex que Plus).
+- **Action required**: Monitorear
+- **Details**: Relevante para equipos que evalúen alternativas a Claude Code / Cursor para coding agéntico: Codex en la Super App es el competidor directo (escribe, testea y depura código de forma autónoma). La Super App está disponible primero para Plus ($20/mes) y Pro ($200/mes), con rollout limitado al tier gratuito. ChatGPT 5.5 ≠ GPT-5.5 "Spud" — este último completó pretraining el 24 mar 2026 y se espera en Q2 2026. El nuevo tier $100/mes Pro se sitúa entre Plus y Pro y enfatiza acceso extendido a Codex.
+
+---
+
 ## [2026-04-10] fast-jwt: cluster de 3 CVEs en JWT verification (CVSS 9.1 / 5.3 / 4.2), publicados 3-9 abril
 
 - **Source**: [GitLab CVE-2026-35039](https://advisories.gitlab.com/pkg/npm/fast-jwt/CVE-2026-35039/) / [GitLab CVE-2026-35040](https://advisories.gitlab.com/pkg/npm/fast-jwt/CVE-2026-35040/) / [GitLab CVE-2026-35041](https://advisories.gitlab.com/pkg/npm/fast-jwt/CVE-2026-35041/) / [CVEReports](https://cvereports.com/reports/CVE-2026-35041)

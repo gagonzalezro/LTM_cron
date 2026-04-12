@@ -1027,3 +1027,23 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: CVE-2026-5724 (CVSS 6.3, MEDIUM, CWE-306) publicado el 10 de abril de 2026. El interceptor chain del servidor gRPC frontend de Temporal omite el interceptor de autorización para endpoints de streaming. El endpoint `AdminService/StreamWorkflowReplicationMessages` acepta requests sin credenciales, a diferencia de los endpoints unary que sí aplican autenticación. Un atacante con acceso de red al puerto frontend de Temporal y conocimiento de la configuración del cluster puede exfiltrar datos de replicación de workflows. Solo afecta Temporal Server self-hosted (Temporal Cloud no está afectado). Afecta versiones 1.24.0–1.30.3.
 - **Action required**: Monitorear
 - **Details**: Actualizar Temporal Server a **v1.28.4**, **v1.29.6**, o **v1.30.4** según la rama. El riesgo real requiere: (1) acceso de red al puerto gRPC frontend (7233 por defecto) desde redes no confiables, y (2) conocimiento del cluster ID y peers. Equipos que expongan el puerto 7233 públicamente o en redes internas amplias sin mTLS/firewall deben priorizar el upgrade. Temporal Cloud no está afectado. GHSA: `GHSA-q98v-9f9w-f49q`.
+
+---
+
+## [2026-04-12] Chrome 146 DBSC - Device Bound Session Credentials GA en Windows (anti-cookie theft)
+
+- **Source**: [The Hacker News](https://thehackernews.com/2026/04/google-rolls-out-dbsc-in-chrome-146-to.html) / [Help Net Security](https://www.helpnetsecurity.com/2026/04/10/google-chrome-device-bound-session-credentials/) / [gHacks](https://www.ghacks.net/2026/04/10/google-chrome-146-adds-device-bound-session-credentials-to-stop-session-cookie-theft-on-windows/)
+- **Confidence**: Alta
+- **What changes**: Google activó Device Bound Session Credentials (DBSC) en Chrome 146 para todos los usuarios Windows el 9 de abril de 2026. DBSC vincula criptográficamente las session cookies al chip TPM del dispositivo usando un key pair único por sitio — cualquier cookie robada por malware es inútil en otro dispositivo. Requiere TPM 2.0 o Windows Hello-compatible hardware. Disponible en Windows 10 v1903+ y Windows 11; cubre ~85% de instalaciones Windows Chrome según telemetría de Google. Expansión a macOS planeada en versión futura de Chrome.
+- **Action required**: Monitorear
+- **Details**: No requiere acción obligatoria para desarrolladores web — DBSC tiene fallback graceful en dispositivos sin TPM. Los sitios pueden optar por soporte activo de DBSC para sesiones de alta seguridad (verificación explícita de key possession). Impacto principal: los ataques de session hijacking via infostealer malware (vector usado en supply chain attacks como UNC1069 y Axios compromise) pierden efectividad para usuarios con TPM 2.0. Google reporta "reducción significativa de session theft desde el beta". Para equipos de seguridad web: evaluar implementar soporte activo DBSC en aplicaciones críticas una vez que la API esté ampliamente disponible.
+
+---
+
+## [2026-04-12] CVE-2026-35616 - Fortinet FortiClient EMS: RCE sin autenticación, explotación activa (CVSS 9.1)
+
+- **Source**: [The Hacker News](https://thehackernews.com/2026/04/fortinet-patches-actively-exploited-cve.html) / [BleepingComputer](https://www.bleepingcomputer.com/news/security/new-fortinet-forticlient-ems-flaw-cve-2026-35616-exploited-in-attacks/) / [CISA KEV oficial](https://www.cisa.gov/news-events/alerts/2026/04/06/cisa-adds-one-known-exploited-vulnerability-catalog) / [watchTowr](https://watchtowr.com/resources/fortinet-forticlient-ems-zero-day-cve-2026-35616-active-exploitation-underway/)
+- **Confidence**: Alta
+- **What changes**: CVE-2026-35616 (CVSS 9.1, CWE-284) en Fortinet FortiClient EMS (Enterprise Management Server) versiones 7.4.5–7.4.6. Un atacante no autenticado puede enviar requests crafteados que eluden los controles de acceso de la API y ejecutar código arbitrario en el servidor EMS. Afecta **únicamente el servidor EMS** — no el cliente desktop FortiClient. Explotación activa confirmada desde el 31 de marzo de 2026; CISA lo añadió al KEV catalog el 6 de abril con deadline para agencias federales el 9 de abril de 2026 (ya vencido).
+- **Action required**: Urgente
+- **Details**: Aplicar hotfix disponible para versiones 7.4.5 y 7.4.6; fix completo en FortiClient EMS 7.4.7 (pendiente). Si el servidor EMS está expuesto a redes no confiables sin firewall, tratar como potencialmente comprometido y hacer forensics antes de parchear. FortiClient EMS gestiona políticas de seguridad endpoint para toda la organización — compromiso del servidor expone configuración de VPN, compliance policies y credenciales de todos los endpoints gestionados. Relevante en entornos enterprise con Fortinet como proveedor de seguridad endpoint.

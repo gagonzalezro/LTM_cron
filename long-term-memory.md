@@ -1177,3 +1177,45 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: El 9 de abril de 2026 (15:00 UTC) al 10 de abril (10:00 UTC), atacantes comprometieron una **API secundaria del sitio oficial cpuid.com** y reemplazaron los enlaces de descarga de CPU-Z, HWMonitor, HWMonitor Pro y PerfMonitor con links a dominios maliciosos. El ataque estuvo activo ~19 horas. Los instaladores troyanizados incluían los binarios legítimos firmados por CPUID + una DLL maliciosa (`CRYPTBASE.dll`) que se cargaba via **DLL sideloading** (Windows DLL search order hijacking). El payload **STX RAT** incluye: HVNC (control remoto oculto), infostealer, ejecución en memoria de EXE/DLL/PowerShell/shellcode. IOCs: dominios C2 `cahayailmukreatif.web[.]id`, `vatrobran[.]hr`, `transitopalermo[.]com`. Atribución: actor ruso, motivación financiera o broker de acceso inicial, campaña activa desde julio 2025.
 - **Action required**: Monitorear
 - **Details**: CPUID confirmó el incidente y lo atribuyó a "compromiso de una API secundaria". Los archivos firmados originales de CPUID **no fueron afectados** — solo los links de descarga en la web. Si se descargó CPU-Z, HWMonitor, HWMonitor Pro o PerfMonitor desde cpuid.com entre el 9 y 10 de abril de 2026: verificar la firma digital del instalador (debe estar firmado por "CPUID"), escanear con EDR para detectar CRYPTBASE.dll maliciosa en el directorio de instalación, y revisar conexiones salientes a los IOCs listados. Impacto observado: 150+ víctimas confirmadas por Kaspersky, mayoría individuales pero también organizaciones en retail, manufactura, consultoría, telecom y agricultura (Brasil, Rusia, China principalmente). Relevante para desarrolladores y sysadmins que usen estas herramientas de hardware monitoring.
+
+---
+
+## [2026-04-20] Cursor 3 released - Agents Window con múltiples agentes en paralelo (abril 2, 2026)
+
+- **Source**: [Cursor Blog / Product Update](https://cursor.com/blog) / [DEV Community Trending](https://dev.to)
+- **Confidence**: Alta
+- **What changes**: Cursor 3 fue lanzado el 2 de abril de 2026 con la feature "Agents Window" que permite ejecutar múltiples agentes IA en paralelo en máquinas locales, worktrees, SSH, y entornos cloud. Los Background Agents trabajan en VMs aisladas en sus propias ramas Git y abren pull requests al terminar. Los Cloud Agents pueden ser disparados desde Slack, GitHub, o móvil y continúan ejecutándose incluso con la laptop cerrada.
+- **Action required**: Monitorear
+- **Details**: Cursor se posiciona como el IDE AI-native dominante, compitiendo con GitHub Copilot y otros editores. La capacidad de agentes paralelos es un cambio significativo en cómo los desarrolladores pueden automatizar tareas multi-paso. Relevante para desarrolladores que trabajen con TypeScript, Python, JavaScript en entornos modernos.
+
+---
+
+## [2026-04-20] React 20 en producción - Compiler estable, Server Actions y Partial Prerendering
+
+- **Source**: [React Blog oficial](https://react.dev/blog) / [Meta Announcements](https://developers.facebook.com) / [React Releases en GitHub](https://github.com/facebook/react/releases)
+- **Confidence**: Alta
+- **What changes**: React 20 (lanzado a principios de 2026) es la versión que integra el React Compiler como **estable y por defecto**. Cambios principales: (1) React Compiler v1.0 está en producción — automáticamente optimiza componentes sin necesidad de useMemo/useCallback/memo. (2) Server Actions pasan de experimental a **estable** — permite form submissions y mutations sin API layer. (3) Partial Prerendering (PPR) estable — renderiza contenido estático durante build y dinámico en runtime. (4) useOptimistic hook estable (antes experimental en React 18). (5) cache() API estable para memoización de request-scope en Server Components.
+- **Action required**: Monitorear
+- **Details**: React 20 no introduce breaking changes — es principalmente adiciones de features experimentales promovidas a estable. El Compiler impacta significativamente performance en apps complejas (Meta vio mejoras de 12-40% en apps internas). Server Actions redefine la arquitectura de React apps eliminando la necesidad de API routes en muchos casos. PPR es especialmente relevante para Next.js. Migraciones desde React 19 son seguras; considerar habilitar el Compiler automático en TypeScript projects.
+
+---
+
+## [2026-04-20] Next.js 15 - breaking changes en caching y async APIs
+
+- **Source**: [Next.js Official Blog](https://nextjs.org/blog) / [Next.js Upgrade Guide](https://nextjs.org/docs/app/guides/upgrading/version-15)
+- **Confidence**: Alta
+- **What changes**: Next.js 15 introduce breaking changes en caching y manejo async de APIs de request. (1) **Caching por defecto:** GET Route Handlers y Client Router Cache **ya no cachean por defecto** — antes cacheeaban automáticamente. (2) **Async Request APIs:** APIs como `cookies()`, `headers()`, `draftMode()` ahora deben ser **await**eadas: `const cookieStore = await cookies()`. (3) **React 19 required** para App Router (Pages Router sigue con React 18 compatible). (4) Mínimo Node.js 18.18.0. (5) `swcMinify` habilitado por defecto.
+- **Action required**: Actualizar dependencia
+- **Details**: El cambio de caching es el más disruptivo — aplicaciones que dependían del caching automático verán cambios en comportamiento de performance. Requiere auditoría de Route Handlers que no especificaban `revalidate`. El cambio a async APIs de request es un breaking change en patrones de código. Codemods están disponibles vía `next codemod`. Apps que usan Pages Router no son afectadas inmediatamente, pero son deprecated. Migraciones desde Next.js 14 requieren testing exhaustivo de caching y data revalidation.
+
+---
+
+## [2026-04-23] Ubuntu 26.04 LTS 'Resolute Raccoon' released - Full Wayland, sin X.org, NVIDIA CUDA en repos
+
+- **Source**: [OMG Ubuntu](https://www.omgubuntu.co.uk/2026/04/ubuntu-26-04-lts-released) / [Canonical Blog](https://canonical.com/blog/canonical-releases-ubuntu-26-04-lts-resolute-raccoon) / [Ubuntu Release Notes](https://documentation.ubuntu.com/release-notes/26.04/)
+- **Confidence**: Alta
+- **What changes**: Canonical lanzó Ubuntu 26.04 LTS "Resolute Raccoon" el 23 de abril de 2026. Cambios principales: (1) **Primera LTS sin Xorg desktop session** — Ubuntu completamente abraza Wayland como compositor por defecto. X.org sigue disponible pero deprecated. (2) TPM-backed full-disk encryption out-of-the-box. (3) NVIDIA CUDA distribuido **nativamente en repositorios apt** (primera vez). (4) AMD ROCm (ROCR, HIP) también disponible en repos. (5) Mejorado soporte para touch y gestures, per-monitor scaling, eliminación de screen tearing. (6) Soporte para servidores ARM con Livepatch updates.
+- **Action required**: Monitorear
+- **Details**: Ubuntu 26.04 LTS es soportado hasta abril 2031 (10 años con Ubuntu Pro + ESM). El cambio a Wayland completo elimina compatibilidad con apps que requieren X.org explicítamente (e.g., algunas herramientas legacy de testing UI, vcxsrv remote X). NVIDIA CUDA en repos simplifica setup para ML developers pero requiere verificación de versión CUDA compatible con proyectos. Relevante para: developers en Ubuntu, ML engineers, infraestructura CI/CD basada en Ubuntu. Migración desde Ubuntu 22.04 LTS requiere testing de apps con Wayland.
+
+---

@@ -1177,3 +1177,53 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: El 9 de abril de 2026 (15:00 UTC) al 10 de abril (10:00 UTC), atacantes comprometieron una **API secundaria del sitio oficial cpuid.com** y reemplazaron los enlaces de descarga de CPU-Z, HWMonitor, HWMonitor Pro y PerfMonitor con links a dominios maliciosos. El ataque estuvo activo ~19 horas. Los instaladores troyanizados incluían los binarios legítimos firmados por CPUID + una DLL maliciosa (`CRYPTBASE.dll`) que se cargaba via **DLL sideloading** (Windows DLL search order hijacking). El payload **STX RAT** incluye: HVNC (control remoto oculto), infostealer, ejecución en memoria de EXE/DLL/PowerShell/shellcode. IOCs: dominios C2 `cahayailmukreatif.web[.]id`, `vatrobran[.]hr`, `transitopalermo[.]com`. Atribución: actor ruso, motivación financiera o broker de acceso inicial, campaña activa desde julio 2025.
 - **Action required**: Monitorear
 - **Details**: CPUID confirmó el incidente y lo atribuyó a "compromiso de una API secundaria". Los archivos firmados originales de CPUID **no fueron afectados** — solo los links de descarga en la web. Si se descargó CPU-Z, HWMonitor, HWMonitor Pro o PerfMonitor desde cpuid.com entre el 9 y 10 de abril de 2026: verificar la firma digital del instalador (debe estar firmado por "CPUID"), escanear con EDR para detectar CRYPTBASE.dll maliciosa en el directorio de instalación, y revisar conexiones salientes a los IOCs listados. Impacto observado: 150+ víctimas confirmadas por Kaspersky, mayoría individuales pero también organizaciones en retail, manufactura, consultoría, telecom y agricultura (Brasil, Rusia, China principalmente). Relevante para desarrolladores y sysadmins que usen estas herramientas de hardware monitoring.
+
+---
+
+## [2026-05-05] Node.js 26.0.0 released - Stream module removals and Temporal API enabled
+
+- **Source**: [Node.js Official Blog](https://nodejs.org/en/blog/release/v26.0.0) / [Help Net Security](https://www.helpnetsecurity.com/2026/05/07/node-js-26-released/)
+- **Confidence**: Alta
+- **What changes**: (1) Internal _stream_* modules removed (soft-deprecated for years) - code importing require('_stream_readable') breaks. (2) V8 upgraded to 14.6. (3) Temporal API enabled by default (native date/time API). (4) Crypto API changes: ML-KEM and ML-DSA pkcs8 export defaults to seed-only format. (5) module.register() moved to runtime-deprecation.
+- **Action required**: Monitor
+- **Details**: The stream module removal is relatively safe since these were internal APIs (underscore-prefixed). Temporal API being enabled is beneficial (modern Date alternative). Developers importing private Node.js internals will experience breakage. Node.js 26 is Current release (not LTS), so evaluate before migrating production workloads.
+
+---
+
+## [2026-05-07] Next.js v15.5.18 security release - CVE-2026-23870 React Server Components DoS + 12 advisories
+
+- **Source**: [Vercel Changelog](https://vercel.com/changelog/next-js-may-2026-security-release) / [Imperva Blog](https://www.imperva.com/blog/cve-2026-23870-imperva-customers-protected-against-critical-react-server-components-dos-vulnerability/)
+- **Confidence**: Alta
+- **What changes**: (1) CVE-2026-23870: Upstream React Server Components vulnerability enabling low-bandwidth DoS via crafted HTTP requests to Flight protocol deserialization (affects all RSC apps). (2) CVE-2026-27979: maxPostponedStateSize enforcement. (3) CVE-2026-29057: http-proxy patch. (4-13) Additional SSRF, cache poisoning, middleware bypass, XSS, and DoS advisories.
+- **Action required**: Urgente
+- **Details**: CVE-2026-23870 is particularly dangerous because small numbers of malicious requests cause disproportionate CPU exhaustion on server. Affects Next.js 13.x, 14.x, 15.x, 16.x App Router and React 19.x RSC packages (react-server-dom-webpack, react-server-dom-parcel, react-server-dom-turbopack). Patched in Next.js 15.5.18 and React 19.0.6/19.1.7/19.2.6. All users must upgrade immediately.
+
+---
+
+## [2026-05-08] React 19 breaking changes - PropTypes removal, JSX Transform requirement, Error Boundary handling
+
+- **Source**: [React Blog](https://react.dev/blog) / [React Router Changelog](https://reactrouter.com/changelog)
+- **Confidence**: Alta
+- **What changes**: (1) PropTypes validation removed from React package (prop checks silently ignored, no warnings). (2) New JSX Transform mandatory (cannot use legacy JSX transform). (3) element.ref access via element.ref deprecated; use element.props.ref instead. (4) Error handling: errors not caught by Error Boundary now reported to window.reportError instead of re-thrown. (5) react-test-renderer switched from sync to concurrent rendering.
+- **Action required**: Update dependency
+- **Details**: PropTypes removal is backward-incompatible for code relying on runtime validation (migrate to runtime type validation libraries like zod/superstruct). JSX Transform requirement means build tooling must support new transform (all modern builders do). Element.ref change affects code inspecting JSX element refs directly. Error Boundary change means unhandled errors silently go to window.reportError - wrap in try/catch or use Error Boundary if you need console.error behavior.
+
+---
+
+## [2026-05-10] Python 3.14.5 bugfix release - maintenance update for Python 3.14 series
+
+- **Source**: [Python Insider Blog](https://blog.python.org/2026/05/python-3145rc1/) / [python.org downloads](https://www.python.org/downloads/release/python-3145rc1/)
+- **Confidence**: Alta
+- **What changes**: Python 3.14.5 released May 10, 2026 as bugfix/maintenance release. Python 3.14 series will receive ~24 months of bugfix support (approximately every 2 months).
+- **Action required**: Monitor
+- **Details**: This is a routine bugfix release, not a major version. Python 3.14 was released October 7, 2025. Existing Python 3.14.x users should update to 3.14.5 for security and stability patches. No breaking changes expected within 3.14.x series.
+
+---
+
+## [2026-05-10] npm ecosystem concerns - 21.2% of packages effectively deprecated
+
+- **Source**: [Aqua Security Blog](https://www.aquasec.com/blog/deceptive-deprecation-the-truth-about-npm-deprecated-packages/)
+- **Confidence**: Media
+- **What changes**: Research by Aqua Nautilus found 8.2% of most-downloaded npm packages officially marked deprecated, but real deprecation rate is ~21.2% when accounting for inconsistent dependency handling and unmaintained transitive deps.
+- **Action required**: Monitor
+- **Details**: This highlights systemic risk in npm ecosystem - many packages are effectively abandoned but not formally deprecated. When evaluating new dependencies, check not just direct package status but also all transitive dependencies for maintenance status. Consider tools like Socket.dev or Snyk for dependency security scanning.

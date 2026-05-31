@@ -1177,3 +1177,63 @@ Archivo mantenido automaticamente por la skill `/investigador`. Cada entrada est
 - **What changes**: El 9 de abril de 2026 (15:00 UTC) al 10 de abril (10:00 UTC), atacantes comprometieron una **API secundaria del sitio oficial cpuid.com** y reemplazaron los enlaces de descarga de CPU-Z, HWMonitor, HWMonitor Pro y PerfMonitor con links a dominios maliciosos. El ataque estuvo activo ~19 horas. Los instaladores troyanizados incluían los binarios legítimos firmados por CPUID + una DLL maliciosa (`CRYPTBASE.dll`) que se cargaba via **DLL sideloading** (Windows DLL search order hijacking). El payload **STX RAT** incluye: HVNC (control remoto oculto), infostealer, ejecución en memoria de EXE/DLL/PowerShell/shellcode. IOCs: dominios C2 `cahayailmukreatif.web[.]id`, `vatrobran[.]hr`, `transitopalermo[.]com`. Atribución: actor ruso, motivación financiera o broker de acceso inicial, campaña activa desde julio 2025.
 - **Action required**: Monitorear
 - **Details**: CPUID confirmó el incidente y lo atribuyó a "compromiso de una API secundaria". Los archivos firmados originales de CPUID **no fueron afectados** — solo los links de descarga en la web. Si se descargó CPU-Z, HWMonitor, HWMonitor Pro o PerfMonitor desde cpuid.com entre el 9 y 10 de abril de 2026: verificar la firma digital del instalador (debe estar firmado por "CPUID"), escanear con EDR para detectar CRYPTBASE.dll maliciosa en el directorio de instalación, y revisar conexiones salientes a los IOCs listados. Impacto observado: 150+ víctimas confirmadas por Kaspersky, mayoría individuales pero también organizaciones en retail, manufactura, consultoría, telecom y agricultura (Brasil, Rusia, China principalmente). Relevante para desarrolladores y sysadmins que usen estas herramientas de hardware monitoring.
+
+---
+
+## [2026-05-05] Node.js 26 released - breaking changes en streams, HTTP, y module system
+
+- **Source**: [Node.js v26.0.0 oficial](https://nodejs.org/en/blog/release/v26.0.0) / [NodeSource blog](https://nodesource.com/blog/nodejs-v26-is-here) / [Node Design Patterns](https://nodejsdesignpatterns.com/blog/whats-new-in-nodejs-26/)
+- **Confidence**: Alta
+- **What changes**: Node.js 26 (5 mayo 2026) introduce breaking changes importantes: (1) **Modulos _stream_* removidos** — `_stream_readable`, `_stream_writable`, `_stream_duplex`, `_stream_transform`, `_stream_passthrough` ya no existen. Usar `require('stream').Readable`, `.Writable`, etc. (2) **HTTP API** — `http.Server.prototype.writeHeader()` removido, usar `writeHead()`. (3) **Module System** — la excepcion sin extension para `type: "module"` fue removida; archivos sin extension requieren `.cjs` o `.mjs` explicitamente. `--experimental-transform-types` removido; TypeScript type stripping ahora es parte del module system estable. (4) **Stream behavior** — Readable streams ya no leen por adelantado, leen un buffer a la vez. (5) **Crypto** — ML-KEM y ML-DSA keys usan seed-only format por defecto para PKCS8. (6) **Requisitos de compilacion**: Python 3.9 ya no soportado (minimo 3.10), GCC 13.2+ requerido.
+- **Action required**: Actualizar dependencia
+- **Details**: Node.js 26 entra en Long Term Support (LTS) en octubre 2026. El cambio mas impactante es la remoccion de los modulos `_stream_*` internos — cualquier codigo que importe directamente desde `_stream_readable` se rompe. Proyectos que usan `require('stream')` no son afectados. Temporal API ahora habilitado globalmente sin flags experimentales. V8 actualizado a 14.6.
+
+---
+
+## [2026-05-06] React 19.2.6 released - type hardening y performance improvements
+
+- **Source**: [React GitHub releases](https://github.com/facebook/react/releases) / [endoflife.date React](https://eosl.date/eol/product/react/)
+- **Confidence**: Alta
+- **What changes**: React 19.2.6 lanzado el 6 de mayo de 2026 con mejoras de hardening de tipos y rendimiento. Incluye mejoras en type inference para componentes. La version es mantenida y soportada.
+- **Action required**: Monitorear
+- **Details**: React 19.2 (octubre 2025) introduce `<Activity>` component para gestionar visibilidad preservando estado, y `useEffectEvent` hook para handlers estables sin necesidad de dependency arrays. React 19.2.6 refina estas features con mejor type safety.
+
+---
+
+## [2026-05-12] Bun 1.3.14 release - HTTP/3, Image API, y base de Claude Code
+
+- **Source**: [Bun GitHub releases](https://github.com/oven-sh/bun/releases) / [Bun official blog](https://bun.com/) / [Programming Helper Tech](https://www.programming-helper.com/tech/bun-2026-anthropic-ai-coding-runtime)
+- **Confidence**: Alta
+- **What changes**: Bun 1.3.14 (12 mayo 2026) introduce HTTP/3 servers, built-in Image API, y warm installs 7x mas rapido que releases anteriores. Bun alcanza 1.52M descargas semanales en npm a mediados de mayo 2026. Adquisicion clave: Anthropic adquirio Bun en diciembre 2025, ahora es la base del runtime para Claude Code, Claude Agent SDK, y futuros productos AI de Anthropic. Bun permanece MIT-licensed y open-source.
+- **Action required**: Monitorear
+- **Details**: Bun es el runtime de ejecucion para Claude Code. La adquisicion por Anthropic asegura que Bun sera un componente critico de la suite de herramientas de IA. 20% de nuevas aplicaciones Next.js en Vercel corren en Bun a abril 2026. Usuarios en produccion: Figma, The New York Times, Intercom, Slack, Cursor, Lovable, Windsurf, PostHog, Remotion, Upstash.
+
+---
+
+## [2026-05-20] Microsoft IntelliCode deprecado para Visual Studio Code
+
+- **Source**: [Microsoft IntelliCode GitHub](https://github.com/microsoft/vscode-intellicode) / [InfoWorld](https://www.infoworld.com/article/4107421/microsoft-deprecates-intellicode-for-visual-studio-code.html)
+- **Confidence**: Alta
+- **What changes**: Microsoft depreco oficialmente IntelliCode para Visual Studio Code en mayo de 2026. Extensiones afectadas: IntelliCode, IntelliCode Completions, IntelliCode for C# Dev Kit, IntelliCode API Usage Examples. Microsoft recomienda migrar a GitHub Copilot Chat para developers de C#.
+- **Action required**: Migrar
+- **Details**: IntelliCode ya no recibe nuevas features. Los bug fixes y soporte terminaron inmediatamente. Las sugerencias de inline gray text fueron removidas. Usuarios de IntelliCode deben migrar a GitHub Copilot Chat para mantener asistencia de IA en VS Code.
+
+---
+
+## [2026-05-28] JetBrains dotMemory Unit deprecado
+
+- **Source**: [JetBrains .NET Tools Blog](https://blog.jetbrains.com/dotnet/2026/05/28/deprecating-dotmemory-unit/)
+- **Confidence**: Alta
+- **What changes**: JetBrains anuncio el 28 de mayo 2026 la depreciacion y retiro de dotMemory Unit. El producto ya no recibira mantenimiento activo, actualizaciones de compatibilidad, o parches de seguridad. Usuarios deben descontinuar su uso.
+- **Action required**: Migrar
+- **Details**: dotMemory Unit fue marcado como deprecated en NuGet.org el 20 de mayo 2026. El proyecto no ha sido desarrollado activamente por tiempo y no soporta las ultimas versiones de .NET. Equipos usando dotMemory Unit deben buscar alternativas para testing de memoria en .NET.
+
+---
+
+## [2026-10-31] Python 3.10 EOL - soporte de seguridad termina octubre 2026 (URGENTE - 153 dias)
+
+- **Source**: [Python devguide - Status of Python versions](https://devguide.python.org/versions/) / [HeroDevs Python 3.10 EOL Guide](https://www.herodevs.com/blog-posts/python-3-10-end-of-life-october-2026-security-and-migration-guide/)
+- **Confidence**: Alta
+- **What changes**: Python 3.10 entra en End of Life el 31 de octubre de 2026 — en 153 dias. Despues de esa fecha, Python 3.10 ya no recibira security patches o bug fixes. Python 3.14 ya fue lanzado el 7 de octubre de 2025 con ciclo de soporte hasta octubre de 2030. Python 3.13 (EOL octubre 2029) recibe mantenimiento activo.
+- **Action required**: Urgente
+- **Details**: Cualquier proyecto ejecutando Python 3.10 en produccion debe migrar a 3.11, 3.12, 3.13, o 3.14 antes del 31 de octubre 2026. Despues de esa fecha, vulnerabilidades de seguridad encontradas en Python 3.10 no seran parcheadas. Python 3.13 introdujo deprecaciones en modulos como asyncio policy system (a remover en 3.16) y algunas funciones asyncio (a remover en 3.16).
